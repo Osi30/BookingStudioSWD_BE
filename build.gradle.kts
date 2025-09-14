@@ -22,11 +22,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("io.github.cdimascio:dotenv-java:3.2.0")
+	implementation("org.projectlombok:lombok:1.18.38")
+	implementation("org.modelmapper:modelmapper:3.1.1")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
-	implementation("io.github.cdimascio:dotenv-java:3.2.0")
-	implementation("org.projectlombok:lombok:1.18.38")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
