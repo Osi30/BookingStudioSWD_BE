@@ -1,9 +1,12 @@
 package com.studio.booking.services.impl;
 
+import com.studio.booking.dtos.request.EmailRequest;
 import com.studio.booking.entities.Account;
 import com.studio.booking.entities.VerifyToken;
+import com.studio.booking.enums.EmailTemplate;
 import com.studio.booking.enums.TokenType;
 import com.studio.booking.repositories.VerifyTokenRepo;
+import com.studio.booking.services.EmailService;
 import com.studio.booking.services.VerifyTokenService;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -22,6 +27,7 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
     @Value("${TOKEN_RESET_PASSWORD}")
     private Long tokenResetPasswordTime;
 
+    private final EmailService emailService;
     private final VerifyTokenRepo verifyTokenRepo;
 
     @Override
@@ -29,7 +35,43 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
         // Generate email token for verification
         VerifyToken verifyToken = generateToken(account, tokenType);
 
-        return verifyTokenRepo.save(verifyToken).getToken();
+        // Choose and send email template
+        return switch (tokenType) {
+            case VERIFY_EMAIL -> verifyEmail(account, verifyToken);
+            default -> verifyResetPassword(account, verifyToken);
+        };
+    }
+
+    public String verifyEmail(Account account, VerifyToken verifyToken) {
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("fullName", account.getFullName());
+        attributes.put("tokenTime", tokenEmailTime.toString());
+
+        // Construct and send to account email
+        emailService.sendHtmlEmail(EmailRequest.builder()
+                .to(account.getEmail())
+                .attributes(attributes)
+                .verifyToken(verifyToken.getToken())
+                .emailTemplate(EmailTemplate.VERIFY_EMAIL)
+                .build());
+
+        return "Please verify your email";
+    }
+
+    public String verifyResetPassword(Account account, VerifyToken verifyToken) {
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("fullName", account.getFullName());
+        attributes.put("tokenTime", tokenResetPasswordTime.toString());
+
+        // Construct and send to account email
+        emailService.sendHtmlEmail(EmailRequest.builder()
+                .to(account.getEmail())
+                .attributes(attributes)
+                .verifyToken(verifyToken.getToken())
+                .emailTemplate(EmailTemplate.RESET_PASSWORD)
+                .build());
+
+        return "Please verify your email to reset password";
     }
 
     public VerifyToken generateToken(Account account, TokenType tokenType) {
@@ -65,4 +107,5 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
 
         return verifyTokenRepo.save(token);
     }
+
 }
