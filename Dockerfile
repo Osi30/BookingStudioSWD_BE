@@ -11,6 +11,7 @@ WORKDIR /app
 #3.1 Copy Build and Setting Layer
 COPY gradlew .
 COPY gradle gradle
+COPY gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
