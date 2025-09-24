@@ -2,6 +2,8 @@ package com.studio.booking.exceptions;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.exceptions.exceptions.AccountException;
+import com.studio.booking.exceptions.exceptions.AuthException;
+import com.studio.booking.exceptions.exceptions.EmailException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +13,16 @@ import org.springframework.web.context.request.WebRequest;
 @RestControllerAdvice
 public class ExceptionGlobalHandler {
 
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<BaseResponse> handleAuthException(AuthException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(AccountException.class)
     public ResponseEntity<BaseResponse> handleAccountException(AccountException ex, WebRequest request) {
         BaseResponse exceptionResponse = BaseResponse.builder()
@@ -19,5 +31,15 @@ public class ExceptionGlobalHandler {
                 .data(request.getDescription(false))
                 .build();
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmailException.class)
+    public ResponseEntity<BaseResponse> handleEmailException(EmailException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
