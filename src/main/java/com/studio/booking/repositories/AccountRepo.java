@@ -8,5 +8,9 @@ import java.util.Collection;
 import java.util.List;
 
 public interface AccountRepo extends JpaRepository<Account, String> {
+    Account findByEmail(String email);
+
+    Account findByUsername(String username);
+
     List<Account> findAllByStatusIsIn(Collection<AccountStatus> status);
 }

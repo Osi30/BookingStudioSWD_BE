@@ -11,5 +11,5 @@ public enum AccountStatus {
     BANNED("banned"),
     DELETED("deleted");
 
-    private final String status;
+    private final String code;
 }
