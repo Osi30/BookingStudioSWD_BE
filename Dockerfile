@@ -14,12 +14,6 @@ COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
-#3.2 Install findutils (contains xargs)
-RUN apt-get update && apt-get install -y findutils && rm -rf /var/lib/apt/lists/*
-
-#3.3 Create Dependencies Layer and Prevents Gradle from running as a background daemon
-RUN ./gradlew dependencies --no-daemon
-
 #4 Copy Entire Src
 COPY src src
 
