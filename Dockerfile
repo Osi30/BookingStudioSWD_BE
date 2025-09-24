@@ -10,7 +10,7 @@ WORKDIR /app
 #3 Docker Layer Caching Optimization: Reused if not change
 #3.1 Copy Build and Setting Layer
 COPY gradlew .
-COPY gradle gralde
+COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
