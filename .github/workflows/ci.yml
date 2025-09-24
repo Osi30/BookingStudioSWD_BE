@@ -1,0 +1,31 @@
+name: Continuous Integration
+
+# Kích hoạt workflow này khi có sự kiện push lên nhánh main (bao gồm merge)
+on:
+  push:
+    branches:
+      - main  # Branch name for deployment
+
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Sử dụng hệ điều hành Ubuntu mới nhất để chạy workflow
+
+    steps:
+      # Tải mã nguồn từ GitHub xuống môi trường chạy
+      - name: Checkout code
+        uses: actions/checkout@v2 # Tải mã nguồn từ GitHub xuống
+
+      - name: Build Docker Image
+        run: docker build -t booking-studio . # Dựa vào Dockerfile để build image
+
+      - name: Run Docker Container and Check Health
+        # http://localhost:8080/health dùng để kiểm tra ứng dụng bên trong máy chủ ảo của GitHub Actions
+        run: |
+          docker run -d -p 8080:8080 --name studio-app booking-studio
+          sleep 30
+          curl --fail http://localhost:8080/health || (echo "Health check failed" && exit 1)
+
+      - name: Run unit tests
+        run: |
+          ./gradlew test
