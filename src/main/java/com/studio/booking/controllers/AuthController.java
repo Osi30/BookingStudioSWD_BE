@@ -34,4 +34,20 @@ public class AuthController {
                 .build();
         return new ResponseEntity<>(baseResponse, HttpStatus.CREATED);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<BaseResponse> login(
+            @RequestBody AuthRequest authRequest
+    ) {
+        // Generate tokens base on login type
+        authRequest.setAuthType(AuthType.PASSWORD);
+        String token = authService.login(authRequest);
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Login account successfully!")
+                .data(token)
+                .build();
+        return new ResponseEntity<>(baseResponse, HttpStatus.OK);
+    }
 }

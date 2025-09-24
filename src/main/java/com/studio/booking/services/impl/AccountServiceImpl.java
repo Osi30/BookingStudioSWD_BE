@@ -60,6 +60,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Account getAccountByIdentifier(String identifier, AccountIdentifier identifierType) {
+        return switch (identifierType) {
+            case EMAIL -> accountRepo.findByEmail(identifier);
+            case USERNAME -> accountRepo.findByUsername(identifier);
+            default -> accountRepo.findByIdentifier(identifier);
+        };
+    }
+
+    @Override
     public AccountResponse getAccountResponseById(String accountId) {
         return accountMapper.toAccountResponse(getAccountById(accountId));
     }
