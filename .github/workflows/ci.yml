@@ -36,6 +36,10 @@ jobs:
           sleep 1
           curl --fail http://localhost:8080/actuator/health
 
+      - name: Show Docker Logs on Failure
+        if: failure()
+        run: docker logs studio-app
+
       - name: Run unit tests
         run: |
           ./gradlew test
