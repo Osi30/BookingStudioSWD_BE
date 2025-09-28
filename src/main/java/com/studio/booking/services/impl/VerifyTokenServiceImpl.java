@@ -3,14 +3,17 @@ package com.studio.booking.services.impl;
 import com.studio.booking.dtos.request.EmailRequest;
 import com.studio.booking.entities.Account;
 import com.studio.booking.entities.VerifyToken;
+import com.studio.booking.enums.AccountStatus;
 import com.studio.booking.enums.EmailTemplate;
 import com.studio.booking.enums.TokenType;
+import com.studio.booking.exceptions.exceptions.AuthException;
 import com.studio.booking.repositories.VerifyTokenRepo;
 import com.studio.booking.services.EmailService;
 import com.studio.booking.services.VerifyTokenService;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +32,7 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
 
     private final EmailService emailService;
     private final VerifyTokenRepo verifyTokenRepo;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public String sendToken(Account account, TokenType tokenType) {
@@ -40,6 +44,35 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
             case VERIFY_EMAIL -> verifyEmail(account, verifyToken);
             default -> verifyResetPassword(account, verifyToken);
         };
+    }
+
+    @Override
+    public String verifyToken(String token, Map<String, Object> data) {
+        VerifyToken verifyToken = verifyTokenRepo.findByToken(token);
+
+        validateToken(verifyToken);
+
+        verifyToken.setIsVerified(true);
+
+        switch (verifyToken.getTokenType()) {
+            case VERIFY_EMAIL:
+                verifyToken.getAccount().setStatus(AccountStatus.ACTIVE);
+                break;
+            default:
+                String password = data.get("password").toString();
+                String confirmPassword = data.get("confirmPassword").toString();
+
+                if (!Validation.isNullOrEmpty(password) && !Validation.isNullOrEmpty(confirmPassword)
+                        && password.equals(confirmPassword)) {
+                    verifyToken.getAccount().setPassword(passwordEncoder.encode(password));
+                } else {
+                    throw new AuthException("Incorrect password or confirm password");
+                }
+                break;
+        }
+
+        verifyTokenRepo.save(verifyToken);
+        return "Token is verified!";
     }
 
     public String verifyEmail(Account account, VerifyToken verifyToken) {
@@ -108,4 +141,12 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
         return verifyTokenRepo.save(token);
     }
 
+    private void validateToken(VerifyToken verifyToken) {
+        if (verifyToken == null) {
+            throw new AuthException("Token is null");
+        }
+        if (verifyToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new AuthException("Token is expired");
+        }
+    }
 }
