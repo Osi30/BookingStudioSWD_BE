@@ -19,12 +19,18 @@ jobs:
       - name: Build Docker Image
         run: docker build -t booking-studio . # Dựa vào Dockerfile để build image
 
+      # Cài đặt wait-for-it và curl
+      - name: Install dependencies for health check
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wait-for-it curl
+
       - name: Run Docker Container and Check Health
         # http://localhost:8080/health dùng để kiểm tra ứng dụng bên trong máy chủ ảo của GitHub Actions
+        # wait-for-it sẽ đợi tối đa 60s cho cổng 8080 mở
         run: |
           docker run -d -p 8080:8080 --name studio-app booking-studio
-          wait-for-it localhost:8080 -t 60 --strict -- \
-          curl --fail http://localhost:8080/health || (echo "Health check failed" && exit 1)
+          wait-for-it localhost:8080 -t 60 --strict -- timeout 5s curl -f http://localhost:8080/health || (echo "Health check failed" && exit 1)
 
       - name: Run unit tests
         run: |
