@@ -1,0 +1,12 @@
+# application-ci.yml
+spring:
+  # Sử dụng H2 In-Memory database thay DB thật
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  # Tắt các tính năng cần DB nếu không cần thiết
+  jpa:
+    hibernate:
+      ddl-auto: none
