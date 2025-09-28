@@ -30,9 +30,7 @@ jobs:
         # wait-for-it sẽ đợi tối đa 60s cho cổng 8080 mở
         # Kích hoạt profile 'ci' để ứng dụng dùng H2 DB thay vì DB thật
         run: |
-          docker run -d -p 8080:8080 --name studio-app \
-            -e SPRING_PROFILES_ACTIVE=ci \
-            booking-studio
+          docker run -d -p 8080:8080 --name studio-app -e SPRING_PROFILES_ACTIVE=ci booking-studio
           wait-for-it localhost:8080 -t 60 --strict
           echo "Port is open. Waiting 10 seconds for Spring Boot to stabilize..."
           sleep 10
