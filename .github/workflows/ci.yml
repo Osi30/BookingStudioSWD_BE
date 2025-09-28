@@ -23,7 +23,7 @@ jobs:
         # http://localhost:8080/health dùng để kiểm tra ứng dụng bên trong máy chủ ảo của GitHub Actions
         run: |
           docker run -d -p 8080:8080 --name studio-app booking-studio
-          sleep 30
+          wait-for-it localhost:8080 -t 60 --strict -- \
           curl --fail http://localhost:8080/health || (echo "Health check failed" && exit 1)
 
       - name: Run unit tests
