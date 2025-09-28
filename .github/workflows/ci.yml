@@ -32,8 +32,9 @@ jobs:
         run: |
           docker run -d -p 8080:8080 --name studio-app -e SPRING_PROFILES_ACTIVE=ci booking-studio
           wait-for-it localhost:8080 -t 60 --strict
-          echo "Port is open. Waiting 10 seconds for Spring Boot to stabilize..."
-          curl --connect-timeout 5 -f http://localhost:8080/health || (echo "Health check failed" && exit 1)
+          echo "Port is open. Waiting 1 seconds for Spring Boot to stabilize..."
+          sleep 1
+          curl --fail http://localhost:8080/actuator/health
 
       - name: Run unit tests
         run: |
