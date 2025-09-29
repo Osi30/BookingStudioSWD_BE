@@ -41,6 +41,10 @@ jobs:
         if: failure()
         run: docker logs studio-app
 
+      # Cấp quyền thực thi
+      - name: Set execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Run unit tests
         run: |
           ./gradlew test
