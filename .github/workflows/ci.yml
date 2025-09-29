@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main  # Branch name for deployment
+      - feature/ci-cd
 
 
 jobs:
