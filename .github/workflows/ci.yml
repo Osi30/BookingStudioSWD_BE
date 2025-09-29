@@ -34,7 +34,7 @@ jobs:
           docker run -d -p 8080:8080 --name studio-app --env-file ci.env -e SPRING_PROFILES_ACTIVE=ci booking-studio
           wait-for-it localhost:8080 -t 60 --strict
           echo "Port is open. Waiting 5 seconds for Spring Boot to stabilize..."
-          sleep 5
+          sleep 30
           curl --fail http://localhost:8080/actuator/health || (echo "Health check failed, checking logs..." && exit 1)
 
       - name: Show Docker Logs on Failure
