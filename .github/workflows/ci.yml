@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main  # Branch name for deployment
+      - feature/ci-cd
 
 
 jobs:
@@ -19,12 +20,30 @@ jobs:
       - name: Build Docker Image
         run: docker build -t booking-studio . # Dựa vào Dockerfile để build image
 
+      # Cài đặt wait-for-it và curl
+      - name: Install dependencies for health check
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wait-for-it curl
+
       - name: Run Docker Container and Check Health
         # http://localhost:8080/health dùng để kiểm tra ứng dụng bên trong máy chủ ảo của GitHub Actions
+        # wait-for-it sẽ đợi tối đa 60s cho cổng 8080 mở
+        # Kích hoạt profile 'ci' để ứng dụng dùng H2 DB thay vì DB thật
         run: |
-          docker run -d -p 8080:8080 --name studio-app booking-studio
+          docker run -d -p 8080:8080 --name studio-app --env-file ci.env -e SPRING_PROFILES_ACTIVE=ci booking-studio
+          wait-for-it localhost:8080 -t 60 --strict
+          echo "Port is open. Waiting 5 seconds for Spring Boot to stabilize..."
           sleep 30
-          curl --fail http://localhost:8080/health || (echo "Health check failed" && exit 1)
+          curl --fail http://localhost:8080/actuator/health || (echo "Health check failed, checking logs..." && exit 1)
+
+      - name: Show Docker Logs on Failure
+        if: failure()
+        run: docker logs studio-app
+
+      # Cấp quyền thực thi
+      - name: Set execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Run unit tests
         run: |
