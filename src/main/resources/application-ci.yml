@@ -1,5 +1,9 @@
-# application-ci.yml
+server:
+  port: 8080
+
 spring:
+  application:
+    name: studio
   # Sử dụng H2 In-Memory database thay DB thật
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
@@ -10,3 +14,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  # Dummy mail
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enabled: false
