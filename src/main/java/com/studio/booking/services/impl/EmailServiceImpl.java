@@ -1,13 +1,17 @@
 package com.studio.booking.services.impl;
 
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import com.studio.booking.dtos.request.EmailRequest;
 import com.studio.booking.exceptions.exceptions.EmailException;
 import com.studio.booking.services.EmailService;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -24,19 +28,18 @@ public class EmailServiceImpl implements EmailService {
     @Value("${VERIFY_API}")
     private String verifyTokenApi;
 
-    private final JavaMailSender mailSender;
+    @Value("${SENDGRID_API_KEY}")
+    private String senderApiKey;
+
+    @Value("${EMAIL_FROM}")
+    private String emailFrom;
+
     private final SpringTemplateEngine templateEngine;
 
     @Async("threadPoolTaskExecutor_FFE")
     @Override
     public void sendHtmlEmail(EmailRequest request) {
         try {
-            // Support HTML content types
-            MimeMessage message = mailSender.createMimeMessage();
-
-            // Utility class to indicate email is a "multipart" message (contains both text and attachments)
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
             // Url for button href variable
             String verifyUrl = frontEndUrl + verifyTokenApi + request.getVerifyToken();
 
@@ -46,6 +49,7 @@ public class EmailServiceImpl implements EmailService {
                 context.setVariable(entry.getKey(), entry.getValue());
             }
 
+            // Get template
             switch (request.getEmailTemplate()) {
                 case VERIFY_EMAIL:
                     context.setVariable("verifyUrl", verifyUrl);
@@ -58,12 +62,25 @@ public class EmailServiceImpl implements EmailService {
             // Find & generate html file and set data from context
             String htmlContent = templateEngine.process(request.getEmailTemplate().getCode(), context);
 
-            // Set receiver, subject and content body
-            helper.setTo(request.getTo());
-            helper.setSubject(request.getEmailTemplate().getSubject());
-            helper.setText(htmlContent, true);
+            // Set email properties
+            Email from = new Email(emailFrom);
+            Email to = new Email(request.getTo());
+            Content content = new Content("text/html", htmlContent);
+            Mail mail = new Mail(from, request.getEmailTemplate().getSubject(), to, content);
 
-            mailSender.send(message);
+            // Set email request
+            SendGrid sendGrid = new SendGrid(senderApiKey);
+            Request senderRequest = new Request();
+            senderRequest.setMethod(Method.POST);
+            senderRequest.setEndpoint("mail/send");
+            senderRequest.setBody(mail.build());
+
+            // Request api
+            Response response = sendGrid.api(senderRequest);
+
+            if (response.getStatusCode() >= 400) {
+                throw new EmailException("SendGrid API call failed with status: " + response.getStatusCode() + " body: " + response.getBody());
+            }
         } catch (Exception e) {
             throw new EmailException(e.getMessage());
         }

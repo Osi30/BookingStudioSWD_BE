@@ -23,7 +23,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
     implementation("org.modelmapper:modelmapper:3.1.1")
@@ -35,6 +34,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     implementation("com.sun.mail:jakarta.mail:2.0.2")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("com.sendgrid:sendgrid-java:4.10.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
