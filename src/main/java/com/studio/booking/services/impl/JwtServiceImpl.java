@@ -40,6 +40,15 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
+    @Override
+    public String getIdentifierFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSecretKey()).build()
+                .parseSignedClaims(token.substring(7))
+                .getPayload()
+                .get("identifier", String.class);
+    }
+
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(jwtKey.getBytes());
     }

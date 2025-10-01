@@ -4,9 +4,8 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - main  # Branch name for deployment
-      - feature/ci-cd
-
+      - '**'  # All of branch
+      - '!develop' # Without develop
 
 jobs:
   build-and-test:
