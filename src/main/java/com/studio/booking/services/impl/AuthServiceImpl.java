@@ -9,6 +9,7 @@ import com.studio.booking.enums.AccountIdentifier;
 import com.studio.booking.enums.AccountStatus;
 import com.studio.booking.enums.AuthType;
 import com.studio.booking.enums.TokenType;
+import com.studio.booking.exceptions.exceptions.AuthException;
 import com.studio.booking.services.AccountService;
 import com.studio.booking.services.AuthService;
 import com.studio.booking.services.JwtService;
@@ -80,6 +81,16 @@ public class AuthServiceImpl implements AuthService {
     public String login(AuthRequest authRequest) {
         Authentication authentication = authenticate(authRequest, authRequest.getAuthType());
         return jwtService.generateToken(authentication);
+    }
+
+    @Override
+    public String requestResetPassword(String email) {
+        Account account = accountService.getAccountByIdentifier(email, AccountIdentifier.EMAIL);
+        if (account == null) {
+            throw new AuthException("Reset Password Failed");
+        }
+
+        return verifyTokenService.sendToken(account, TokenType.RESET_PASSWORD);
     }
 
     /// Creates URL that redirects the user to Google's authorization server.

@@ -108,7 +108,7 @@ public class AccountServiceImpl implements AccountService {
         validateIdentity(identity, AccountIdentifier.USERNAME);
 
         // Email
-        identity.setIdentity(authRequest.getPhoneNumber());
+        identity.setIdentity(authRequest.getEmail());
         validateIdentity(identity, AccountIdentifier.EMAIL);
 
         return identity;

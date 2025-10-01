@@ -9,6 +9,8 @@ public interface AuthService {
 
     String login(AuthRequest authRequest);
 
+    String requestResetPassword(String email);
+
     String generateOauthURL(String loginType);
 
     String exchangeCodeForToken(String code) throws JsonProcessingException;
