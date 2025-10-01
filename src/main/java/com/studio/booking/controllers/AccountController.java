@@ -3,6 +3,7 @@ package com.studio.booking.controllers;
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.response.AccountResponse;
 import com.studio.booking.services.AccountService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
 
+    @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<BaseResponse> getAllAccounts() {

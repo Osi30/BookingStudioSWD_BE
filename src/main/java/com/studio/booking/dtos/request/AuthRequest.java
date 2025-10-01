@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.AccountStatus;
 import com.studio.booking.enums.AuthType;
+import com.studio.booking.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,9 @@ public class AuthRequest {
 
     @JsonProperty("accountStatus")
     private AccountStatus accountStatus;
+
+    @JsonProperty("userType")
+    private UserType userType;
 
     @JsonProperty("identifierType")
     private AuthType authType;
