@@ -1,5 +1,6 @@
 package com.studio.booking.mappers.impl;
 
+import com.studio.booking.dtos.request.AccountRequest;
 import com.studio.booking.dtos.request.AuthRequest;
 import com.studio.booking.dtos.response.AccountResponse;
 import com.studio.booking.entities.Account;
@@ -51,6 +52,17 @@ public class AccountMapperImpl implements AccountMapper {
             existedAccount.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
+        return existedAccount;
+    }
+
+    @Override
+    public Account updateAccount(AccountRequest request, Account existedAccount) {
+        Optional.ofNullable(request.getStatus()).ifPresent(existedAccount::setStatus);
+        Optional.ofNullable(request.getFullName()).ifPresent(existedAccount::setFullName);
+        Optional.ofNullable(request.getPhoneNumber()).ifPresent(existedAccount::setPhoneNumber);
+        Optional.ofNullable(request.getUsername()).ifPresent(existedAccount::setUsername);
+        Optional.ofNullable(request.getRole()).ifPresent(existedAccount::setRole);
+        Optional.ofNullable(request.getUserType()).ifPresent(existedAccount::setUserType);
         return existedAccount;
     }
 
