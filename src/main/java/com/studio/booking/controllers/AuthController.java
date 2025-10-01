@@ -10,10 +10,13 @@ import com.studio.booking.services.AuthService;
 import com.studio.booking.services.VerifyTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +24,9 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    @Value("${FRONT_END_URL}")
+    private String frontEndUrl;
+
     private final AuthService authService;
     private final VerifyTokenService verifyTokenService;
 
@@ -57,17 +63,16 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<BaseResponse> verifyAccount(
+    public ResponseEntity<Void> verifyAccount(
             @RequestParam("token") String token
     ) {
-        String message = verifyTokenService.verifyToken(token, null);
+        boolean result = verifyTokenService.verifyToken(token, null);
+        String redirectPath = result ? "/verifyToken?status=success" : "/verifyToken?status=fail";
 
-        BaseResponse baseResponse = BaseResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message(message)
-                .data(null)
-                .build();
-        return new ResponseEntity<>(baseResponse, HttpStatus.OK);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(frontEndUrl + redirectPath));
+
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @GetMapping("/oauth-login")
@@ -135,12 +140,12 @@ public class AuthController {
         attributes.put("password", resetPasswordRequest.getPassword());
         attributes.put("confirmPassword", resetPasswordRequest.getConfirmPassword());
 
-        String response = verifyTokenService.verifyToken(resetPasswordRequest.getToken(), attributes);
+        boolean response = verifyTokenService.verifyToken(resetPasswordRequest.getToken(), attributes);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Reset Password Response")
-                .data(response)
+                .data(response ? "Reset Password Success" : "Reset Password Fail")
                 .build();
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
