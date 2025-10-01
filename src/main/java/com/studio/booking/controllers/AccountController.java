@@ -49,7 +49,8 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('MANAGE_PROFILE')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getAccountProfile(
             @RequestHeader("Authorization") String token
@@ -65,7 +66,8 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('MANAGE_PROFILE')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping
     public ResponseEntity<BaseResponse> updateAccount(
             @RequestHeader(value = "Authorization") String token,
@@ -82,7 +84,8 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('MANAGE_PROFILE')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping
     public ResponseEntity<BaseResponse> deleteAccount(
             @RequestHeader(value = "Authorization") String token

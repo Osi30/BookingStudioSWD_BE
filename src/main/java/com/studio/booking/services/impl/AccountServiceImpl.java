@@ -94,6 +94,7 @@ public class AccountServiceImpl implements AccountService {
         if (existingAccount.getEmail() != null && request.getEmail() != null
                 && !existingAccount.getEmail().equals(request.getEmail())) {
             existingAccount.setEmail(request.getEmail());
+            existingAccount.setStatus(AccountStatus.INACTIVE);
             verifyTokenService.sendToken(existingAccount, TokenType.VERIFY_EMAIL);
         }
 

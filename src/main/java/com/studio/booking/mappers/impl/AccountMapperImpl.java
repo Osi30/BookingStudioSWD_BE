@@ -5,6 +5,7 @@ import com.studio.booking.dtos.request.AuthRequest;
 import com.studio.booking.dtos.response.AccountResponse;
 import com.studio.booking.entities.Account;
 import com.studio.booking.enums.AccountStatus;
+import com.studio.booking.enums.UserType;
 import com.studio.booking.exceptions.exceptions.AuthException;
 import com.studio.booking.mappers.AccountMapper;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class AccountMapperImpl implements AccountMapper {
         switch (authRequest.getAuthType()) {
             case GOOGLE:
                 account.setStatus(AccountStatus.ACTIVE);
+                account.setUserType(UserType.PERSONAL);
                 break;
             default:
                 if (authRequest.getPassword() == null){
