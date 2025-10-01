@@ -7,5 +7,5 @@ import java.util.Map;
 
 public interface VerifyTokenService {
     String sendToken(Account account, TokenType tokenType);
-    String verifyToken(String token, Map<String, Object> data);
+    boolean verifyToken(String token, Map<String, Object> data);
 }

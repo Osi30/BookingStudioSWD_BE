@@ -47,10 +47,12 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
     }
 
     @Override
-    public String verifyToken(String token, Map<String, Object> data) {
+    public boolean verifyToken(String token, Map<String, Object> data) {
         VerifyToken verifyToken = verifyTokenRepo.findByToken(token);
 
-        validateToken(verifyToken);
+        if (!validateToken(verifyToken)) {
+            return false;
+        }
 
         verifyToken.setIsVerified(true);
 
@@ -72,7 +74,7 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
         }
 
         verifyTokenRepo.save(verifyToken);
-        return "Token is verified!";
+        return true;
     }
 
     public String verifyEmail(Account account, VerifyToken verifyToken) {
@@ -141,12 +143,10 @@ public class VerifyTokenServiceImpl implements VerifyTokenService {
         return verifyTokenRepo.save(token);
     }
 
-    private void validateToken(VerifyToken verifyToken) {
+    private boolean validateToken(VerifyToken verifyToken) {
         if (verifyToken == null) {
-            throw new AuthException("Token is null");
+            return false;
         }
-        if (verifyToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new AuthException("Token is expired");
-        }
+        return !verifyToken.getExpiryDate().isBefore(LocalDateTime.now());
     }
 }

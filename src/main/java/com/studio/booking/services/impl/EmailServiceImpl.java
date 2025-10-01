@@ -22,9 +22,6 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
-    @Value("${FRONT_END_URL}")
-    private String frontEndUrl;
-
     @Value("${VERIFY_API}")
     private String verifyTokenApi;
 
@@ -41,7 +38,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendHtmlEmail(EmailRequest request) {
         try {
             // Url for button href variable
-            String verifyUrl = frontEndUrl + verifyTokenApi + request.getVerifyToken();
+            String verifyUrl = verifyTokenApi + request.getVerifyToken();
 
             // Act as a Map for put data to html file
             Context context = new Context();
