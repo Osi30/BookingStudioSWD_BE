@@ -11,8 +11,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -20,20 +18,12 @@ public class AppConfig {
     @Value("${ADMIN_EMAIL}")
     private String adminEmail;
 
-    @Value("${ADMIN_PASSWORD}")
-    private String adminPassword;
-
     @Autowired
     private AccountRepo accountRepo;
 
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -51,9 +41,7 @@ public class AppConfig {
             if (adminAccount == null) {
                 adminAccount = Account.builder()
                         .email(adminEmail)
-                        .username("admin")
                         .fullName("Admin")
-                        .password(passwordEncoder().encode(adminPassword))
                         .role(AccountRole.ADMIN)
                         .status(AccountStatus.ACTIVE)
                         .build();

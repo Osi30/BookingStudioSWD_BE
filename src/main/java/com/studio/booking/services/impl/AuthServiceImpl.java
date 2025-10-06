@@ -3,28 +3,19 @@ package com.studio.booking.services.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studio.booking.dtos.request.AuthRequest;
 import com.studio.booking.entities.Account;
-import com.studio.booking.enums.AccountIdentifier;
 import com.studio.booking.enums.AccountStatus;
-import com.studio.booking.enums.AuthType;
-import com.studio.booking.enums.TokenType;
 import com.studio.booking.exceptions.exceptions.AuthException;
 import com.studio.booking.services.AccountService;
 import com.studio.booking.services.AuthService;
 import com.studio.booking.services.JwtService;
-import com.studio.booking.services.VerifyTokenService;
-import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -47,68 +38,42 @@ public class AuthServiceImpl implements AuthService {
     private String googleClientSecret;
 
     private final AccountService accountService;
-    private final VerifyTokenService verifyTokenService;
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
-    public String register(AuthRequest authRequest) {
-        // Validation
-        if (Validation.isNullOrEmpty(authRequest.getUsername())
-                && Validation.isNullOrEmpty(authRequest.getEmail())
-                && Validation.isNullOrEmpty(authRequest.getPhoneNumber())) {
-            throw new BadCredentialsException("Required at least one field of username, email");
+    public String login(JsonNode userInfo) {
+        String email = userInfo.get("email").asText();
+        String name = userInfo.get("name").asText();
+
+        Account googleAccount = accountService.getAccountByEmail(email);
+
+        // Create account if not exist one
+        if (googleAccount == null) {
+            googleAccount = accountService.createAccount(email, name);
         }
 
-        // Create account
-        Account account = accountService.createAccount(authRequest);
-
-        StringBuilder message = new StringBuilder("Create account successfully!");
-
-        if (account.getEmail() != null) {
-            // Generate and send email token for verification
-            String verifyEmailMessage = verifyTokenService.sendToken(account, TokenType.VERIFY_EMAIL);
-            message.append(verifyEmailMessage);
+        if (googleAccount.getStatus().equals(AccountStatus.BANNED)){
+            throw new AuthException("This account is already banned");
         }
 
-        return message.toString();
-    }
-
-    @Override
-    public String login(AuthRequest authRequest) {
-        Authentication authentication = authenticate(authRequest, authRequest.getAuthType());
+        Authentication authentication = authenticate(googleAccount);
         return jwtService.generateToken(authentication);
-    }
-
-    @Override
-    public String requestResetPassword(String email) {
-        Account account = accountService.getAccountByIdentifier(email, AccountIdentifier.EMAIL);
-        if (account == null) {
-            throw new AuthException("Reset Password Failed");
-        }
-
-        return verifyTokenService.sendToken(account, TokenType.RESET_PASSWORD);
     }
 
     /// Creates URL that redirects the user to Google's authorization server.
     @Override
-    public String generateOauthURL(String loginType) {
-        if (loginType.equalsIgnoreCase("google")) {
-            String state = UUID.randomUUID().toString();
-            String scope = "profile email";
-            return "https://accounts.google.com/o/oauth2/auth" +
-                    "?client_id=" + googleClientId +
-                    "&redirect_uri=" + URLEncoder.encode(googleRedirectUri
-                    , StandardCharsets.UTF_8) +
-                    "&response_type=code" +
-                    "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
-                    "&state=" + state;
-        } else {
-            return null;
-        }
+    public String generateOauthURL() {
+        String state = UUID.randomUUID().toString();
+        String scope = "profile email";
+        return "https://accounts.google.com/o/oauth2/auth" +
+                "?client_id=" + googleClientId +
+                "&redirect_uri=" + URLEncoder.encode(googleRedirectUri
+                , StandardCharsets.UTF_8) +
+                "&response_type=code" +
+                "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
+                "&state=" + state;
     }
 
     /// Exchange authorization code from user for access token to user google's account
@@ -153,32 +118,8 @@ public class AuthServiceImpl implements AuthService {
         return objectMapper.readTree(response.getBody());
     }
 
-    private Authentication authenticate(AuthRequest authRequest, AuthType authType) {
-        UserDetails userDetails;
-
-        switch (authType) {
-            case GOOGLE:
-                Account googleAccount = accountService.getAccountByIdentifier(authRequest.getEmail(), AccountIdentifier.EMAIL);
-
-                // Create account if not exist one
-                if (googleAccount == null) {
-                    authRequest.setAccountStatus(AccountStatus.ACTIVE);
-                    googleAccount = accountService.createAccount(authRequest);
-                }
-
-                userDetails = new User(googleAccount.getId(), "", googleAccount.getAuthorities());
-                break;
-            default:
-                userDetails = userDetailsService.loadUserByUsername(authRequest.getIdentifier());
-                if (userDetails == null) {
-                    throw new BadCredentialsException("Account not found with identifier: " + authRequest.getIdentifier());
-                }
-                if (!passwordEncoder.matches(authRequest.getPassword(), userDetails.getPassword())) {
-                    throw new BadCredentialsException("Invalid password");
-                }
-                break;
-        }
-
+    private Authentication authenticate(Account account) {
+        UserDetails userDetails = new User(account.getId(), "", account.getAuthorities());
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }

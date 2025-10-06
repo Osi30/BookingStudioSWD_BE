@@ -14,18 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountRequest {
-    @Email
-    @JsonProperty("email")
-    private String email;
-
-    @JsonProperty("username")
-    private String username;
-
     @JsonProperty("fullName")
     private String fullName;
-
-    @JsonProperty("password")
-    private String password;
 
     @Pattern(regexp = "(84|0[3|5|7|8|9])+(\\d{8})", message = "Invalid phone!")
     @JsonProperty("phoneNumber")

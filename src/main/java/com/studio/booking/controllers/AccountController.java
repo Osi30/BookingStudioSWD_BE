@@ -3,6 +3,7 @@ package com.studio.booking.controllers;
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.AccountRequest;
 import com.studio.booking.dtos.response.AccountResponse;
+import com.studio.booking.mappers.AccountMapper;
 import com.studio.booking.services.AccountService;
 import com.studio.booking.services.JwtService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,13 +20,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
+    private final AccountMapper accountMapper;
     private final JwtService jwtService;
 
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<BaseResponse> getAllAccounts() {
-        List<AccountResponse> accountResponses = accountService.getAllAccountResponses();
+        List<AccountResponse> accountResponses = accountService.getAllAccounts();
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -39,7 +41,8 @@ public class AccountController {
     public ResponseEntity<BaseResponse> getAccountById(
             @PathVariable String accountId
     ) {
-        AccountResponse accountResponse = accountService.getAccountResponseById(accountId);
+        AccountResponse accountResponse = accountMapper
+                .toAccountResponse(accountService.getAccountById(accountId));
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -56,7 +59,8 @@ public class AccountController {
             @RequestHeader("Authorization") String token
     ) {
         String accountId = jwtService.getIdentifierFromToken(token);
-        AccountResponse accountResponse = accountService.getAccountResponseById(accountId);
+        AccountResponse accountResponse = accountMapper
+                .toAccountResponse(accountService.getAccountById(accountId));
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .code(HttpStatus.OK.value())

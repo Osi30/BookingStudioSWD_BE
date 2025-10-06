@@ -1,6 +1,5 @@
 package com.studio.booking.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.AccountStatus;
 import com.studio.booking.enums.UserType;
@@ -19,7 +18,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,14 +34,8 @@ public class Account {
     @Email(message = "Invalid Email!")
     private String email;
 
-    @Column(name = "username", unique = true)
-    private String username;
-
     @Column(name = "user_type")
     private UserType userType;
-
-    @Column(name = "password")
-    private String password;
 
     @Column(name = "full_name")
     private String fullName;
@@ -64,10 +56,6 @@ public class Account {
 
     @Column(name = "status")
     private AccountStatus status;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-    private List<VerifyToken> verifyTokens;
 
     @PrePersist
     public void generateId() {
