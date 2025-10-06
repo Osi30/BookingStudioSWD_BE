@@ -32,4 +32,7 @@ public class Location {
 
     @Column(name = "latitude")
     private String latitude;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
 }

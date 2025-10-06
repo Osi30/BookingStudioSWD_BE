@@ -40,6 +40,9 @@ public class PriceRule {
     @Column(name = "date")
     private LocalDate date;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "price_table_item_id", referencedColumnName = "price_table_item_id")
     private PriceTableItem priceTableItem;

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +28,10 @@ public class Booking {
     @Column(name = "booking_date")
     private LocalDateTime bookingDate;
 
+    @UpdateTimestamp
+    @Column(name = "update_date")
+    private LocalDateTime updateDate;
+
     @Column(name = "note")
     private String note;
 
@@ -42,6 +47,10 @@ public class Booking {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id", referencedColumnName = "account_id")
     private Account account;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "studio_type_id", referencedColumnName = "studio_type_id")
+    private StudioType studioType;
 
     @PrePersist
     public void generateId() {

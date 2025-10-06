@@ -1,6 +1,7 @@
 package com.studio.booking.repositories;
 
 import com.studio.booking.entities.Account;
+import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.AccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,8 @@ public interface AccountRepo extends JpaRepository<Account, String> {
     Account findByEmail(String email);
 
     Account findByUsername(String username);
+
+    Account findByRole(AccountRole role);
 
     @Query("""
             SELECT a
