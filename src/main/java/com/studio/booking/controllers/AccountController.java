@@ -120,5 +120,17 @@ public class AccountController {
                 .build();
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
+
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("unban/{accountId}")
+    public ResponseEntity<BaseResponse> unban(@PathVariable String accountId) {
+        String msg = accountService.unban(accountId);
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message(msg)
+                .data(null)
+                .build());
+    }
 }
 

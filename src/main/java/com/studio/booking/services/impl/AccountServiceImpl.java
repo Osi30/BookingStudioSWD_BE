@@ -83,6 +83,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public String unban(String accountId) {
+        Account acc = accountRepo.findById(accountId)
+                .orElseThrow(() -> new AccountException("Account not found with id: " + accountId));
+        acc.setStatus(AccountStatus.ACTIVE);
+        accountRepo.save(acc);
+        return "Unbanned account with id: " + accountId;
+    }
+
+    @Override
     public List<AccountResponse> getAllAccounts() {
         return accountRepo.findAllByStatusIsIn(List.of(AccountStatus.ACTIVE, AccountStatus.BANNED)).stream()
                 .map(accountMapper::toAccountResponse)
