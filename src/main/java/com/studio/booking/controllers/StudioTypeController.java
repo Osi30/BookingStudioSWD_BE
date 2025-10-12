@@ -2,7 +2,6 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioTypeRequest;
-import com.studio.booking.services.LocationService;
 import com.studio.booking.services.StudioTypeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -12,17 +11,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/studio-types")
 @RequiredArgsConstructor
 public class StudioTypeController {
     private final StudioTypeService studioTypeService;
-    private final LocationService locationService;
 
-    // ---------- STUDIO TYPE ----------
-
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/studio-types")
+    @GetMapping()
     public ResponseEntity<BaseResponse> getAllStudioTypes() {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -31,9 +25,9 @@ public class StudioTypeController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/studio-types")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping()
     public ResponseEntity<BaseResponse> createStudioType(@RequestBody StudioTypeRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(BaseResponse.builder()
@@ -43,9 +37,9 @@ public class StudioTypeController {
                         .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/studio-types/{id}")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> updateStudioType(@PathVariable String id,
                                                          @RequestBody StudioTypeRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -55,9 +49,9 @@ public class StudioTypeController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/studio-types/{id}")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> deleteStudioType(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -65,9 +59,9 @@ public class StudioTypeController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/studio-types/{id}/restore")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restoreStudioType(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/studio-assigns")
 @RequiredArgsConstructor
-public class AdminStudioAssignController {
+public class StudioAssignController {
     private final StudioAssignService service;
 
     @SecurityRequirement(name = "BearerAuth")
