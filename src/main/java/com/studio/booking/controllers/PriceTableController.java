@@ -1,8 +1,8 @@
 package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
-import com.studio.booking.dtos.request.StudioAssignRequest;
-import com.studio.booking.services.StudioAssignService;
+import com.studio.booking.dtos.request.PriceTableRequest;
+import com.studio.booking.services.PriceTableService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,10 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/studio-assigns")
+@RequestMapping("/api/admin/pricetables")
 @RequiredArgsConstructor
-public class AdminStudioAssignController {
-    private final StudioAssignService service;
+public class PriceTableController {
+    private final PriceTableService priceTableService;
 
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
@@ -22,53 +22,52 @@ public class AdminStudioAssignController {
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Get all studio assignments successfully!")
-                .data(service.getAll())
+                .message("Get all price tables successfully!")
+                .data(priceTableService.getAll())
                 .build());
     }
 
-    @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<BaseResponse> getByBooking(@PathVariable String bookingId) {
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Get assignments by booking successfully!")
-                .data(service.getByBooking(bookingId))
+                .message("Get price table successfully!")
+                .data(priceTableService.getById(id))
                 .build());
     }
 
-    @GetMapping("/studio/{studioId}")
-    public ResponseEntity<BaseResponse> getByStudio(@PathVariable String studioId) {
-        return ResponseEntity.ok(BaseResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("Get assignments by studio successfully!")
-                .data(service.getByStudio(studioId))
-                .build());
-    }
-
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<BaseResponse> create(@RequestBody StudioAssignRequest req) {
+    public ResponseEntity<BaseResponse> create(@RequestBody PriceTableRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create studio assignment successfully!")
-                .data(service.create(req))
+                .message("Create price table successfully!")
+                .data(priceTableService.create(req))
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(@PathVariable String id,
-                                               @RequestBody StudioAssignRequest req) {
+                                               @RequestBody PriceTableRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Update studio assignment successfully!")
-                .data(service.update(id, req))
+                .message("Update price table successfully!")
+                .data(priceTableService.update(id, req))
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message(service.delete(id))
+                .message(priceTableService.delete(id))
                 .build());
     }
 }

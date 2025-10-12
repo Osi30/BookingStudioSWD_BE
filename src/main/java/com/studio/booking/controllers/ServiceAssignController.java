@@ -1,8 +1,8 @@
 package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
-import com.studio.booking.dtos.request.StudioAssignRequest;
-import com.studio.booking.services.StudioAssignService;
+import com.studio.booking.dtos.request.ServiceAssignRequest;
+import com.studio.booking.services.ServiceAssignService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,10 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/studio-assigns")
+@RequestMapping("/api/admin/service-assigns")
 @RequiredArgsConstructor
-public class AdminStudioAssignController {
-    private final StudioAssignService service;
+public class ServiceAssignController {
+    private final ServiceAssignService service;
 
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
@@ -22,44 +22,44 @@ public class AdminStudioAssignController {
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Get all studio assignments successfully!")
+                .message("Get all service assignments successfully!")
                 .data(service.getAll())
                 .build());
     }
 
-    @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<BaseResponse> getByBooking(@PathVariable String bookingId) {
+    @GetMapping("/studio-assign/{studioAssignId}")
+    public ResponseEntity<BaseResponse> getByStudioAssign(@PathVariable String studioAssignId) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Get assignments by booking successfully!")
-                .data(service.getByBooking(bookingId))
+                .message("Get service assignments by studioAssign successfully!")
+                .data(service.getByStudioAssign(studioAssignId))
                 .build());
     }
 
-    @GetMapping("/studio/{studioId}")
-    public ResponseEntity<BaseResponse> getByStudio(@PathVariable String studioId) {
+    @GetMapping("/service/{serviceId}")
+    public ResponseEntity<BaseResponse> getByService(@PathVariable String serviceId) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Get assignments by studio successfully!")
-                .data(service.getByStudio(studioId))
+                .message("Get service assignments by service successfully!")
+                .data(service.getByService(serviceId))
                 .build());
     }
 
     @PostMapping
-    public ResponseEntity<BaseResponse> create(@RequestBody StudioAssignRequest req) {
+    public ResponseEntity<BaseResponse> create(@RequestBody ServiceAssignRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create studio assignment successfully!")
+                .message("Create service assignment successfully!")
                 .data(service.create(req))
                 .build());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(@PathVariable String id,
-                                               @RequestBody StudioAssignRequest req) {
+                                               @RequestBody ServiceAssignRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message("Update studio assignment successfully!")
+                .message("Update service assignment successfully!")
                 .data(service.update(id, req))
                 .build());
     }
