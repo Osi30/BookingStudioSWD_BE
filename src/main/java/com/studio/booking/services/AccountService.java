@@ -1,21 +1,17 @@
 package com.studio.booking.services;
 
 import com.studio.booking.dtos.request.AccountRequest;
-import com.studio.booking.dtos.request.AuthRequest;
 import com.studio.booking.dtos.response.AccountResponse;
 import com.studio.booking.entities.Account;
-import com.studio.booking.enums.AccountIdentifier;
 
 import java.util.List;
 
 public interface AccountService {
-    Account createAccount(AuthRequest authRequest);
+    Account createAccount(String email, String name);
 
     Account getAccountById(String accountId);
 
-    Account getAccountByIdentifier(String identifier, AccountIdentifier identifierType);
-
-    AccountResponse getAccountResponseById(String accountId);
+    Account getAccountByEmail(String email);
 
     AccountResponse updateAccount(AccountRequest account, String accountId);
 
@@ -23,7 +19,7 @@ public interface AccountService {
 
     String banAccount(String accountId);
 
-    List<Account> getAllAccounts();
+    String unban(String accountId);
 
-    List<AccountResponse> getAllAccountResponses();
+    List<AccountResponse> getAllAccounts();
 }

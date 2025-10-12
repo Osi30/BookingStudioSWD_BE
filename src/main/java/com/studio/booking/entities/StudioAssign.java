@@ -33,6 +33,9 @@ public class StudioAssign {
     @Column(name = "service_amount")
     private Double serviceAmount;
 
+    @Column(name = "addition_time")
+    private Double additionTime;
+
     @Column(name = "status")
     private AssignStatus status;
 
@@ -41,6 +44,6 @@ public class StudioAssign {
     private Studio studio;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "booking_detail_id", referencedColumnName = "booking_detail_id")
-    private BookingDetail bookingDetail;
+    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id")
+    private Booking booking;
 }

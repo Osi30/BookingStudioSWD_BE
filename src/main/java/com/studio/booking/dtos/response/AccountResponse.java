@@ -2,6 +2,7 @@ package com.studio.booking.dtos.response;
 
 import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.AccountStatus;
+import com.studio.booking.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +17,11 @@ import java.time.LocalDateTime;
 public class AccountResponse {
     private String id;
     private String email;
-    private String username;
     private String fullName;
     private String phoneNumber;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private AccountRole accountRole;
     private AccountStatus status;
+    private UserType userType;
 }

@@ -1,9 +1,7 @@
 package com.studio.booking.exceptions;
 
 import com.studio.booking.dtos.BaseResponse;
-import com.studio.booking.exceptions.exceptions.AccountException;
-import com.studio.booking.exceptions.exceptions.AuthException;
-import com.studio.booking.exceptions.exceptions.EmailException;
+import com.studio.booking.exceptions.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -34,6 +32,27 @@ public class ExceptionGlobalHandler {
                 .build();
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(StudioTypeException.class)
+    public ResponseEntity<BaseResponse> handleStudioTypeException(StudioTypeException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(StudioException.class)
+    public ResponseEntity<BaseResponse> handleStudioException(StudioException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(EmailException.class)
     public ResponseEntity<BaseResponse> handleEmailException(EmailException ex, WebRequest request) {

@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResetPasswordRequest {
-    private String token;
-    private String password;
-    private String oldPassword;
-    private String confirmPassword;
+public class ServiceAssignRequest {
+    private String studioAssignId;
+    private String serviceId;
+    private Boolean isActive;
 }

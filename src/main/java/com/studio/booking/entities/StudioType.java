@@ -35,7 +35,6 @@ public class StudioType {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "type_service",

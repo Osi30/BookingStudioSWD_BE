@@ -1,0 +1,41 @@
+# Docker Compose file format version
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  postgres-db:
+    image: postgres:17
+    container_name: studio-db
+    environment:
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: studio
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d studio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Spring Boot Api Service
+  spring-boot-bsc-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: studio-api
+    container_name: studio-api
+    ports:
+      - "8080:8080"
+    environment:
+      # This will retrieve to application-prod.yml (which override application.yml)
+      - SPRING_PROFILES_ACTIVE=dev
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

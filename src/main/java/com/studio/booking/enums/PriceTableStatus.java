@@ -8,5 +8,6 @@ import lombok.Getter;
 public enum PriceTableStatus {
     COMING_SOON,
     IS_HAPPENING,
-    ENDED
+    ENDED,
+    DELETED
 }

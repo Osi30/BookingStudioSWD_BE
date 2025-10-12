@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum AssignStatus {
     COMING_SOON("Coming Soon"),
     IS_HAPPENING("Is Happening"),
-    ENDED("Ended");;
+    ENDED("Ended"),
+    CANCELLED("Cancelled");
 
     private final String description;
 }

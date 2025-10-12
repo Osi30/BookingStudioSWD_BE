@@ -28,7 +28,7 @@ public class Studio {
     private String description;
 
     @Column(name = "area")
-    private String area;
+    private Double area;
 
     @Column(name = "start_time")
     private LocalTime startTime;
