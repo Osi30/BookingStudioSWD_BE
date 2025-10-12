@@ -11,13 +11,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/services")
+@RequestMapping("/api/services")
 @RequiredArgsConstructor
 public class ServiceController {
     private final ServiceService serviceService;
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -27,8 +25,6 @@ public class ServiceController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()

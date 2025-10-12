@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/studio-assigns")
+@RequestMapping("/api/studio-assigns")
 @RequiredArgsConstructor
 public class StudioAssignController {
     private final StudioAssignService service;
