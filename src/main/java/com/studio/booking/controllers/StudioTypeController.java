@@ -25,8 +25,8 @@ public class StudioTypeController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<BaseResponse> createStudioType(@RequestBody StudioTypeRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,8 +37,8 @@ public class StudioTypeController {
                         .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> updateStudioType(@PathVariable String id,
                                                          @RequestBody StudioTypeRequest req) {
@@ -49,8 +49,8 @@ public class StudioTypeController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> deleteStudioType(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -59,8 +59,8 @@ public class StudioTypeController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restoreStudioType(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()

@@ -11,13 +11,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/pricerules")
+@RequestMapping("/api/price-rules")
 @RequiredArgsConstructor
 public class PriceRuleController {
     private final PriceRuleService ruleService;
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/item/{itemId}")
     public ResponseEntity<BaseResponse> getByItemId(@PathVariable String itemId) {
         return ResponseEntity.ok(BaseResponse.builder()

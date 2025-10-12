@@ -6,7 +6,7 @@ import com.studio.booking.entities.Location;
 import com.studio.booking.entities.Studio;
 import com.studio.booking.entities.StudioType;
 import com.studio.booking.enums.StudioStatus;
-import com.studio.booking.exceptions.exceptions.AccountException;
+import com.studio.booking.exceptions.exceptions.StudioException;
 import com.studio.booking.mappers.StudioMapper;
 import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.repositories.StudioRepo;
@@ -35,16 +35,20 @@ public class StudioServiceImpl implements StudioService {
     @Override
     public StudioResponse getById(String id) {
         Studio studio = studioRepo.findById(id)
-                .orElseThrow(() -> new AccountException("Studio not found with id: " + id));
+                .orElseThrow(() -> new StudioException("Studio not found with id: " + id));
         return mapper.toResponse(studio);
     }
 
     @Override
     public StudioResponse create(StudioRequest req) {
         Location location = locationRepo.findById(req.getLocationId())
-                .orElseThrow(() -> new AccountException("Location not found with id: " + req.getLocationId()));
+                .orElseThrow(() -> new StudioException("Location not found with id: " + req.getLocationId()));
         StudioType type = studioTypeRepo.findById(req.getStudioTypeId())
-                .orElseThrow(() -> new AccountException("Studio type not found with id: " + req.getStudioTypeId()));
+                .orElseThrow(() -> new StudioException("Studio type not found with id: " + req.getStudioTypeId()));
+
+        if (req.getArea() > type.getMaxArea() || req.getArea() < type.getMinArea()){
+            throw new StudioException("Area out of range");
+        }
 
         Studio studio = mapper.toEntity(req);
         studio.setLocation(location);
@@ -57,19 +61,23 @@ public class StudioServiceImpl implements StudioService {
     @Override
     public StudioResponse update(String id, StudioRequest req) {
         Studio existing = studioRepo.findById(id)
-                .orElseThrow(() -> new AccountException("Studio not found: " + id));
+                .orElseThrow(() -> new StudioException("Studio not found: " + id));
         existing = mapper.updateEntity(existing, req);
 
         if (req.getLocationId() != null) {
             Location location = locationRepo.findById(req.getLocationId())
-                    .orElseThrow(() -> new AccountException("Location not found: " + req.getLocationId()));
+                    .orElseThrow(() -> new StudioException("Location not found: " + req.getLocationId()));
             existing.setLocation(location);
         }
 
         if (req.getStudioTypeId() != null) {
             StudioType type = studioTypeRepo.findById(req.getStudioTypeId())
-                    .orElseThrow(() -> new AccountException("Studio type not found: " + req.getStudioTypeId()));
+                    .orElseThrow(() -> new StudioException("Studio type not found: " + req.getStudioTypeId()));
             existing.setStudioType(type);
+        }
+
+        if (req.getArea() > existing.getStudioType().getMaxArea() || req.getArea() < existing.getStudioType().getMinArea()){
+            throw new StudioException("Area out of range");
         }
 
         return mapper.toResponse(studioRepo.save(existing));
@@ -78,7 +86,7 @@ public class StudioServiceImpl implements StudioService {
     @Override
     public String delete(String id) {
         Studio existing = studioRepo.findById(id)
-                .orElseThrow(() -> new AccountException("Studio not found: " + id));
+                .orElseThrow(() -> new StudioException("Studio not found: " + id));
         existing.setStatus(StudioStatus.DELETED);
         studioRepo.save(existing);
         return "Studio deleted successfully!";
@@ -87,7 +95,7 @@ public class StudioServiceImpl implements StudioService {
     @Override
     public String restore(String id) {
         Studio existing = studioRepo.findById(id)
-                .orElseThrow(() -> new AccountException("Studio not found: " + id));
+                .orElseThrow(() -> new StudioException("Studio not found: " + id));
         existing.setStatus(StudioStatus.AVAILABLE);
         studioRepo.save(existing);
         return "Studio restored successfully!";

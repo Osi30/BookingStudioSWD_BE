@@ -15,7 +15,7 @@ import java.time.LocalTime;
 public class StudioRequest {
     private String studioName;
     private String description;
-    private String area;
+    private Double area;
     private LocalTime startTime;
     private LocalTime endTime;
     private StudioStatus status;

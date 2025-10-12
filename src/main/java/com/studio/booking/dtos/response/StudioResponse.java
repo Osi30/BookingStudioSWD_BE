@@ -16,7 +16,7 @@ public class StudioResponse {
     private String id;
     private String studioName;
     private String description;
-    private String area;
+    private Double area;
     private LocalTime startTime;
     private LocalTime endTime;
     private StudioStatus status;

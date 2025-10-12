@@ -3,9 +3,11 @@ package com.studio.booking.controllers;
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioRequest;
 import com.studio.booking.services.StudioService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class StudioController {
     private final StudioService studioService;
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -25,8 +25,6 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -36,8 +34,8 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody StudioRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -48,8 +46,8 @@ public class StudioController {
                         .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(@PathVariable String id,
                                                @RequestBody StudioRequest req) {
@@ -60,8 +58,8 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -70,8 +68,8 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restore(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
