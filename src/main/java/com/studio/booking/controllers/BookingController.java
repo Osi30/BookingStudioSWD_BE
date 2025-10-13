@@ -1,8 +1,10 @@
 package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
+import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.services.BookingService;
+import com.studio.booking.services.JwtService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,11 +12,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api/admin/bookings")
 @RequiredArgsConstructor
 public class BookingController {
     private final BookingService bookingService;
+    private final JwtService jwtService;
+
+    @PostMapping
+    public ResponseEntity<BaseResponse> createBooking(
+            @RequestHeader("Authorization") String token,
+            @RequestBody BookingRequest bookingRequest
+    ) {
+        String accountId = jwtService.getIdentifierFromToken(token);
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Create booking successfully!")
+                .data(bookingService.createBooking(accountId, bookingRequest))
+                .build());
+    }
 
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("hasRole('ADMIN')")

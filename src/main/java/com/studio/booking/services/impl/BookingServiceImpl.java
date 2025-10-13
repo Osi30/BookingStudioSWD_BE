@@ -1,13 +1,19 @@
 package com.studio.booking.services.impl;
 
+import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.Booking;
+import com.studio.booking.entities.StudioType;
 import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.exceptions.exceptions.AccountException;
+import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.BookingMapper;
 import com.studio.booking.repositories.BookingRepo;
+import com.studio.booking.services.AccountService;
 import com.studio.booking.services.BookingService;
+import com.studio.booking.services.StudioTypeService;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +22,34 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
+    private final StudioTypeService studioTypeService;
+    private final AccountService accountService;
     private final BookingRepo bookingRepo;
     private final BookingMapper mapper;
+
+    @Override
+    public BookingResponse createBooking(String accountId, BookingRequest bookingRequest) {
+        if (Validation.isNullOrEmpty(bookingRequest.getStudioTypeId())) {
+            throw new BookingException("Studio Type is required");
+        }
+
+        if (bookingRequest.getStudioQuantity() <= 0) {
+            throw new BookingException("Studio Quantity is required");
+        }
+
+        Booking booking = mapper.toBooking(bookingRequest);
+        booking.setStatus(BookingStatus.IN_PROGRESS);
+
+        // Account
+        booking.setAccount(accountService.getAccountById(accountId));
+
+        // Studio Type
+        booking.setStudioType(studioTypeService.getById(bookingRequest.getStudioTypeId()));
+
+
+
+        return mapper.toResponse(bookingRepo.save(booking));
+    }
 
     @Override
     public List<BookingResponse> getAll() {

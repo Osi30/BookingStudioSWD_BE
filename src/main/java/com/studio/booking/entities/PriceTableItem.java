@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -28,4 +30,7 @@ public class PriceTableItem {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "studio_type_id", referencedColumnName = "studio_type_id")
     private StudioType studioType;
+
+    @OneToMany(mappedBy = "priceTableItem", fetch = FetchType.LAZY)
+    private List<PriceRule> rules;
 }
