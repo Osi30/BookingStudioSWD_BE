@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface StudioService {
     List<Studio> getAvailableStudios(String typeId, String locationId);
-    List<StudioResponse> getAll();
+    List<StudioResponse> getAll(String studioTypeId);
     StudioResponse getById(String id);
     StudioResponse create(StudioRequest req);
     StudioResponse update(String id, StudioRequest req);

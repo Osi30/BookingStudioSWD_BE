@@ -12,10 +12,10 @@ import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.repositories.StudioRepo;
 import com.studio.booking.repositories.StudioTypeRepo;
 import com.studio.booking.services.StudioService;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -32,8 +32,12 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
-    public List<StudioResponse> getAll() {
-        return studioRepo.findAllByStatusNot(StudioStatus.DELETED).stream()
+    public List<StudioResponse> getAll(String studioTypeId) {
+        List<Studio> studios = Validation.isNullOrEmpty(studioTypeId)
+                ? studioRepo.findAllByStatusNot(StudioStatus.DELETED)
+                : studioRepo.findAllByStatusNotAndStudioTypeId(StudioStatus.DELETED, studioTypeId);
+
+        return studios.stream()
                 .map(mapper::toResponse)
                 .toList();
     }
@@ -52,7 +56,7 @@ public class StudioServiceImpl implements StudioService {
         StudioType type = studioTypeRepo.findById(req.getStudioTypeId())
                 .orElseThrow(() -> new StudioException("Studio type not found with id: " + req.getStudioTypeId()));
 
-        if (req.getArea() > type.getMaxArea() || req.getArea() < type.getMinArea()){
+        if (req.getArea() > type.getMaxArea() || req.getArea() < type.getMinArea()) {
             throw new StudioException("Area out of range");
         }
 
@@ -82,7 +86,7 @@ public class StudioServiceImpl implements StudioService {
             existing.setStudioType(type);
         }
 
-        if (req.getArea() > existing.getStudioType().getMaxArea() || req.getArea() < existing.getStudioType().getMinArea()){
+        if (req.getArea() > existing.getStudioType().getMaxArea() || req.getArea() < existing.getStudioType().getMinArea()) {
             throw new StudioException("Area out of range");
         }
 

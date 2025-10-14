@@ -17,11 +17,13 @@ public class StudioController {
     private final StudioService studioService;
 
     @GetMapping
-    public ResponseEntity<BaseResponse> getAll() {
+    public ResponseEntity<BaseResponse> getAll(
+            @RequestParam(required = false) String studioTypeId
+    ) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Get all studios successfully!")
-                .data(studioService.getAll())
+                .data(studioService.getAll(studioTypeId))
                 .build());
     }
 

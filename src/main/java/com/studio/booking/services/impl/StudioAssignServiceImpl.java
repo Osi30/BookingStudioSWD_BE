@@ -3,7 +3,6 @@ package com.studio.booking.services.impl;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.StudioAssignResponse;
 import com.studio.booking.entities.Booking;
-import com.studio.booking.entities.Studio;
 import com.studio.booking.entities.StudioAssign;
 import com.studio.booking.enums.AssignStatus;
 import com.studio.booking.repositories.BookingRepo;
@@ -16,7 +15,6 @@ import com.studio.booking.exceptions.exceptions.AccountException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
