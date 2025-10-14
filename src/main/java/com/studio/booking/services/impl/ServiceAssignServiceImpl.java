@@ -2,18 +2,20 @@ package com.studio.booking.services.impl;
 
 import com.studio.booking.dtos.request.ServiceAssignRequest;
 import com.studio.booking.dtos.response.ServiceAssignResponse;
+import com.studio.booking.entities.Service;
 import com.studio.booking.entities.ServiceAssign;
 import com.studio.booking.entities.StudioAssign;
+import com.studio.booking.enums.ServiceStatus;
 import com.studio.booking.repositories.ServiceAssignRepo;
 import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.repositories.StudioAssignRepo;
 import com.studio.booking.services.ServiceAssignService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import com.studio.booking.exceptions.exceptions.AccountException;
+import com.studio.booking.exceptions.exceptions.ServiceException;
+
 import java.util.List;
 
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class ServiceAssignServiceImpl implements ServiceAssignService {
     private final ServiceAssignRepo serviceAssignRepo;
@@ -42,38 +44,35 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
     }
 
     @Override
-    public ServiceAssignResponse create(ServiceAssignRequest req) {
-        StudioAssign studioAssign = studioAssignRepo.findById(req.getStudioAssignId())
-                .orElseThrow(() -> new AccountException("StudioAssign not found with id: " + req.getStudioAssignId()));
-        Service service = (Service) serviceRepo.findById(req.getServiceId())
-                .orElseThrow(() -> new AccountException("Service not found with id: " + req.getServiceId()));
+    public ServiceAssign create(ServiceAssignRequest req) {
+        Service service = serviceRepo.findById(req.getServiceId())
+                .orElseThrow(() -> new ServiceException("Service not found with id: " + req.getServiceId()));
+        if (!service.getStatus().equals(ServiceStatus.AVAILABLE)) {
+            throw new ServiceException("Service is not available with id: " + req.getServiceId());
+        }
 
-        ServiceAssign serviceAssign = ServiceAssign.builder()
-                .studioAssign(studioAssign)
-                .service((com.studio.booking.entities.Service) service)
+        return ServiceAssign.builder()
+                .service(service)
                 .isActive(req.getIsActive() != null ? req.getIsActive() : true)
                 .build();
-
-        serviceAssignRepo.save(serviceAssign);
-        return toResponse(serviceAssign);
     }
 
     @Override
     public ServiceAssignResponse update(String id, ServiceAssignRequest req) {
         ServiceAssign serviceAssign = serviceAssignRepo.findById(id)
-                .orElseThrow(() -> new AccountException("ServiceAssign not found with id: " + id));
+                .orElseThrow(() -> new ServiceException("ServiceAssign not found with id: " + id));
 
         if (req.getIsActive() != null) {
             serviceAssign.setIsActive(req.getIsActive());
         }
         if (req.getServiceId() != null) {
-            Service service = (Service) serviceRepo.findById(req.getServiceId())
-                    .orElseThrow(() -> new AccountException("Service not found with id: " + req.getServiceId()));
-            serviceAssign.setService((com.studio.booking.entities.Service) service);
+            Service service = serviceRepo.findById(req.getServiceId())
+                    .orElseThrow(() -> new ServiceException("Service not found with id: " + req.getServiceId()));
+            serviceAssign.setService(service);
         }
         if (req.getStudioAssignId() != null) {
             StudioAssign assign = studioAssignRepo.findById(req.getStudioAssignId())
-                    .orElseThrow(() -> new AccountException("StudioAssign not found with id: " + req.getStudioAssignId()));
+                    .orElseThrow(() -> new ServiceException("StudioAssign not found with id: " + req.getStudioAssignId()));
             serviceAssign.setStudioAssign(assign);
         }
 
@@ -84,7 +83,7 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
     @Override
     public String delete(String id) {
         ServiceAssign serviceAssign = serviceAssignRepo.findById(id)
-                .orElseThrow(() -> new AccountException("ServiceAssign not found with id: " + id));
+                .orElseThrow(() -> new ServiceException("ServiceAssign not found with id: " + id));
         serviceAssign.setIsActive(false);
         serviceAssignRepo.save(serviceAssign);
         return "ServiceAssign marked as inactive successfully!";

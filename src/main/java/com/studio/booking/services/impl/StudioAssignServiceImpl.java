@@ -1,26 +1,31 @@
 package com.studio.booking.services.impl;
 
+import com.studio.booking.dtos.request.ServiceAssignRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.StudioAssignResponse;
-import com.studio.booking.entities.Booking;
+import com.studio.booking.entities.Service;
+import com.studio.booking.entities.ServiceAssign;
+import com.studio.booking.entities.Studio;
 import com.studio.booking.entities.StudioAssign;
 import com.studio.booking.enums.AssignStatus;
-import com.studio.booking.repositories.BookingRepo;
+import com.studio.booking.exceptions.exceptions.BookingException;
+import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.repositories.StudioAssignRepo;
 import com.studio.booking.repositories.StudioRepo;
+import com.studio.booking.services.ServiceAssignService;
 import com.studio.booking.services.StudioAssignService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import com.studio.booking.exceptions.exceptions.AccountException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class StudioAssignServiceImpl implements StudioAssignService {
+    private final ServiceAssignService serviceAssignService;
     private final StudioAssignRepo assignRepo;
-    private final BookingRepo bookingRepo;
     private final StudioRepo studioRepo;
 
     @Override
@@ -49,22 +54,38 @@ public class StudioAssignServiceImpl implements StudioAssignService {
 
     @Override
     public StudioAssign create(StudioAssignRequest req) {
-//        Set<String> occupiedStudios = studioRepo.findOccupiedStudioIds(
-//                req.get
-//        );
+        Set<String> occupiedStudios = studioRepo.findOccupiedStudioIds(
+                req.getLocationId(), req.getStudioTypeId(),
+                req.getStartTime().toLocalTime(), req.getEndTime().toLocalTime()
+        );
 
-        Booking booking = bookingRepo.findById(req.getBookingId())
-                .orElseThrow(() -> new AccountException("Booking not found with id: " + req.getBookingId()));
+        List<Studio> availableStudio = studioRepo.findAvailableStudio(occupiedStudios);
+
+        if (availableStudio.isEmpty()) {
+            throw new BookingException("No studio found for the time interval");
+        }
+
+        List<ServiceAssign> serviceAssigns = new ArrayList<>();
+
+        for (String serviceId : req.getServiceIds()) {
+            serviceAssigns.add(serviceAssignService.create(ServiceAssignRequest.builder()
+                    .serviceId(serviceId)
+                    .build()));
+        }
+
+        Double serviceTotal = serviceAssigns.stream()
+                .mapToDouble(sa -> sa.getService().getServiceFee())
+                .sum();
 
         return StudioAssign.builder()
-                .booking(booking)
-//                .studio(studio)
+                .studio(availableStudio.getFirst())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .studioAmount(req.getStudioAmount())
-                .serviceAmount(req.getServiceAmount())
+                .serviceAmount(serviceTotal)
                 .additionTime(req.getAdditionTime())
                 .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
+                .serviceAssigns(serviceAssigns)
                 .build();
     }
 

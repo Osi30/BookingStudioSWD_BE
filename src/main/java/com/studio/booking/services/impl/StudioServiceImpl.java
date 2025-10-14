@@ -27,11 +27,6 @@ public class StudioServiceImpl implements StudioService {
     private final StudioMapper mapper;
 
     @Override
-    public List<Studio> getAvailableStudios(String typeId, String locationId) {
-        return studioRepo.findAvailableStudio(typeId, locationId);
-    }
-
-    @Override
     public List<StudioResponse> getAll(String studioTypeId) {
         List<Studio> studios = Validation.isNullOrEmpty(studioTypeId)
                 ? studioRepo.findAllByStatusNot(StudioStatus.DELETED)

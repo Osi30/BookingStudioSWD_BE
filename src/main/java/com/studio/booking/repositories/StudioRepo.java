@@ -16,13 +16,10 @@ public interface StudioRepo extends JpaRepository<Studio, String> {
     @Query("""
             SELECT s
             FROM Studio s
-            JOIN Location l ON l.id = s.location.id
-            JOIN StudioType st ON st.id = s.studioType.id
-            WHERE l.id = :locationId
-            AND st.id = :typeId
+            WHERE s.id NOT IN :occupiedStudios
             AND s.status = com.studio.booking.enums.StudioStatus.AVAILABLE
             """)
-    List<Studio> findAvailableStudio(String locationId, String typeId);
+    List<Studio> findAvailableStudio(Set<String> occupiedStudios);
 
     @Query("""
             SELECT DISTINCT sa.studio.id
