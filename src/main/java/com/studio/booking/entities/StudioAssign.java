@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,4 +47,7 @@ public class StudioAssign {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id", referencedColumnName = "booking_id")
     private Booking booking;
+
+    @OneToMany(mappedBy = "studioAssign", cascade = CascadeType.ALL)
+    private List<ServiceAssign> serviceAssigns;
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,11 +15,13 @@ import java.time.LocalDateTime;
 @Builder
 public class StudioAssignRequest {
     private String bookingId;
-    private String studioId;
+    private String studioTypeId;
+    private String locationId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private Double studioAmount;
     private Double serviceAmount;
     private Double additionTime;
     private AssignStatus status;
+    private List<String> serviceIds;
 }

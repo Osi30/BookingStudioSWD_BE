@@ -32,6 +32,9 @@ public class StudioType {
     @Column(name = "max_area")
     private Double maxArea;
 
+    @Column(name = "bufferTime")
+    private Double bufferTime;
+
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 

@@ -17,11 +17,13 @@ public class LocationController {
     private final LocationService locationService;
 
     @GetMapping()
-    public ResponseEntity<BaseResponse> getAllLocations() {
+    public ResponseEntity<BaseResponse> getAllLocations(
+            @RequestParam(required = false) String typeId
+    ) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Get all locations successfully!")
-                .data(locationService.getAll())
+                .data(locationService.getAll(typeId))
                 .build());
     }
 

@@ -15,6 +15,7 @@ import com.studio.booking.services.StudioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -24,6 +25,11 @@ public class StudioServiceImpl implements StudioService {
     private final LocationRepo locationRepo;
     private final StudioTypeRepo studioTypeRepo;
     private final StudioMapper mapper;
+
+    @Override
+    public List<Studio> getAvailableStudios(String typeId, String locationId) {
+        return studioRepo.findAvailableStudio(typeId, locationId);
+    }
 
     @Override
     public List<StudioResponse> getAll() {

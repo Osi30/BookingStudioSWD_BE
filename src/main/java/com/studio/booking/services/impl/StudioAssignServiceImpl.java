@@ -13,7 +13,10 @@ import com.studio.booking.services.StudioAssignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.studio.booking.exceptions.exceptions.AccountException;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -47,15 +50,17 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     }
 
     @Override
-    public StudioAssignResponse create(StudioAssignRequest req) {
+    public StudioAssign create(StudioAssignRequest req) {
+//        Set<String> occupiedStudios = studioRepo.findOccupiedStudioIds(
+//                req.get
+//        );
+
         Booking booking = bookingRepo.findById(req.getBookingId())
                 .orElseThrow(() -> new AccountException("Booking not found with id: " + req.getBookingId()));
-        Studio studio = studioRepo.findById(req.getStudioId())
-                .orElseThrow(() -> new AccountException("Studio not found with id: " + req.getStudioId()));
 
-        StudioAssign assign = StudioAssign.builder()
+        return StudioAssign.builder()
                 .booking(booking)
-                .studio(studio)
+//                .studio(studio)
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .studioAmount(req.getStudioAmount())
@@ -63,10 +68,17 @@ public class StudioAssignServiceImpl implements StudioAssignService {
                 .additionTime(req.getAdditionTime())
                 .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
                 .build();
-
-        assignRepo.save(assign);
-        return toResponse(assign);
     }
+
+    @Override
+    public List<StudioAssign> createList(List<StudioAssignRequest> requests) {
+        List<StudioAssign> studioAssigns = new ArrayList<>();
+        for (StudioAssignRequest req : requests) {
+            studioAssigns.add(create(req));
+        }
+        return studioAssigns;
+    }
+
 
     @Override
     public StudioAssignResponse update(String id, StudioAssignRequest req) {
