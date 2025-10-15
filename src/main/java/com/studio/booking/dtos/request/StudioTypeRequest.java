@@ -16,5 +16,6 @@ public class StudioTypeRequest {
     private String description;
     private Double minArea;
     private Double maxArea;
+    private Double bufferTime;
     private List<String> serviceIds; // Dịch vụ sẽ gán
 }

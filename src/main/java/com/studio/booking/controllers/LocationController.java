@@ -17,16 +17,18 @@ public class LocationController {
     private final LocationService locationService;
 
     @GetMapping()
-    public ResponseEntity<BaseResponse> getAllLocations() {
+    public ResponseEntity<BaseResponse> getAllLocations(
+            @RequestParam(required = false) String typeId
+    ) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Get all locations successfully!")
-                .data(locationService.getAll())
+                .data(locationService.getAll(typeId))
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<BaseResponse> createLocation(@RequestBody LocationRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,8 +39,8 @@ public class LocationController {
                         .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> updateLocation(@PathVariable String id,
                                                        @RequestBody LocationRequest req) {
@@ -49,8 +51,8 @@ public class LocationController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> deleteLocation(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -59,8 +61,8 @@ public class LocationController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restoreLocation(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()

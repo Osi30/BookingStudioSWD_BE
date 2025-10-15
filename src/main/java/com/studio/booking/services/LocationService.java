@@ -6,7 +6,7 @@ import com.studio.booking.entities.Location;
 import java.util.List;
 
 public interface LocationService {
-    List<Location> getAll();
+    List<Location> getAll(String typeId);
     Location getById(String id);
     Location create(LocationRequest req);
     Location update(String id, LocationRequest req);

@@ -1,0 +1,23 @@
+package com.studio.booking.dtos.request;
+
+import com.studio.booking.enums.BookingType;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class BookingRequest {
+    private String studioTypeId;
+    private String locationId;
+    private String note;
+    private BookingType bookingType;
+    private int studioQuantity;
+    private List<StudioAssignRequest> studioAssignRequests;
+}

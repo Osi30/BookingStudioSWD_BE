@@ -6,7 +6,7 @@ import com.studio.booking.dtos.response.StudioResponse;
 import java.util.List;
 
 public interface StudioService {
-    List<StudioResponse> getAll();
+    List<StudioResponse> getAll(String studioTypeId);
     StudioResponse getById(String id);
     StudioResponse create(StudioRequest req);
     StudioResponse update(String id, StudioRequest req);

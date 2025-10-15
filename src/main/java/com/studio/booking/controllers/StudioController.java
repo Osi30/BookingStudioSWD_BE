@@ -17,11 +17,13 @@ public class StudioController {
     private final StudioService studioService;
 
     @GetMapping
-    public ResponseEntity<BaseResponse> getAll() {
+    public ResponseEntity<BaseResponse> getAll(
+            @RequestParam(required = false) String studioTypeId
+    ) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Get all studios successfully!")
-                .data(studioService.getAll())
+                .data(studioService.getAll(studioTypeId))
                 .build());
     }
 
@@ -34,8 +36,8 @@ public class StudioController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody StudioRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -46,8 +48,8 @@ public class StudioController {
                         .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(@PathVariable String id,
                                                @RequestBody StudioRequest req) {
@@ -58,8 +60,8 @@ public class StudioController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -68,8 +70,8 @@ public class StudioController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restore(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()

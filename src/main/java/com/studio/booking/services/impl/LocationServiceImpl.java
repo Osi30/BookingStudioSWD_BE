@@ -6,6 +6,7 @@ import com.studio.booking.exceptions.exceptions.AccountException;
 import com.studio.booking.mappers.LocationMapper;
 import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.services.LocationService;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,11 @@ public class LocationServiceImpl implements LocationService {
     private final LocationMapper mapper;
 
     @Override
-    public List<Location> getAll() {
-        return repo.findAllByIsDeletedFalse();
+    public List<Location> getAll(String typeId) {
+        if (Validation.isNullOrEmpty(typeId)) {
+            return repo.findAllByIsDeletedFalse();
+        }
+        return repo.findAllByStudioType(typeId);
     }
 
     @Override

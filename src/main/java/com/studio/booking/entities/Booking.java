@@ -12,6 +12,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -51,6 +52,9 @@ public class Booking {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "studio_type_id", referencedColumnName = "studio_type_id")
     private StudioType studioType;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    private List<StudioAssign> studioAssigns;
 
     @PrePersist
     public void generateId() {

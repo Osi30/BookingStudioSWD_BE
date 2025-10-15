@@ -26,6 +26,7 @@ public class StudioTypeMapperImpl implements StudioTypeMapper {
         Optional.ofNullable(req.getDescription()).ifPresent(existing::setDescription);
         Optional.ofNullable(req.getMinArea()).ifPresent(existing::setMinArea);
         Optional.ofNullable(req.getMaxArea()).ifPresent(existing::setMaxArea);
+        Optional.ofNullable(req.getBufferTime()).ifPresent(existing::setBufferTime);
         return existing;
     }
 }

@@ -1,12 +1,23 @@
 package com.studio.booking.mappers.impl;
 
+import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.Booking;
 import com.studio.booking.mappers.BookingMapper;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class BookingMapperImpl implements BookingMapper {
+    private final ModelMapper modelMapper;
+
+    @Override
+    public Booking toBooking(BookingRequest bookingRequest) {
+        return modelMapper.map(bookingRequest, Booking.class);
+    }
+
     @Override
     public BookingResponse toResponse(Booking booking) {
         return BookingResponse.builder()
