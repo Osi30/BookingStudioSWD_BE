@@ -56,8 +56,8 @@ public class BookingController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
                                                      @RequestBody BookingStatusRequest req) {
@@ -68,8 +68,8 @@ public class BookingController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(@PathVariable String id,
                                                       @RequestParam(required = false) String note) {

@@ -18,8 +18,8 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getOverview() {
         return ResponseEntity.ok(BaseResponse.builder()
