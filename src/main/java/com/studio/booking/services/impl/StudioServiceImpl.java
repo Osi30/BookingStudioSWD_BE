@@ -11,16 +11,19 @@ import com.studio.booking.mappers.StudioMapper;
 import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.repositories.StudioRepo;
 import com.studio.booking.repositories.StudioTypeRepo;
+import com.studio.booking.services.CloudinaryService;
 import com.studio.booking.services.StudioService;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class StudioServiceImpl implements StudioService {
+    private final CloudinaryService cloudinaryService;
     private final StudioRepo studioRepo;
     private final LocationRepo locationRepo;
     private final StudioTypeRepo studioTypeRepo;
@@ -45,13 +48,13 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
-    public StudioResponse create(StudioRequest req) {
+    public StudioResponse create(StudioRequest req) throws IOException {
         Location location = locationRepo.findById(req.getLocationId())
                 .orElseThrow(() -> new StudioException("Location not found with id: " + req.getLocationId()));
         StudioType type = studioTypeRepo.findById(req.getStudioTypeId())
                 .orElseThrow(() -> new StudioException("Studio type not found with id: " + req.getStudioTypeId()));
 
-        if (req.getArea() > type.getMaxArea() || req.getArea() < type.getMinArea()) {
+        if (req.getAcreage() > type.getMaxArea() || req.getAcreage() < type.getMinArea()) {
             throw new StudioException("Area out of range");
         }
 
@@ -59,6 +62,10 @@ public class StudioServiceImpl implements StudioService {
         studio.setLocation(location);
         studio.setStudioType(type);
         studio.setStatus(StudioStatus.AVAILABLE);
+
+        // Image
+        String imageUrl = cloudinaryService.uploadImage(req.getImage());
+        studio.setImageUrl(imageUrl);
 
         return mapper.toResponse(studioRepo.save(studio));
     }
@@ -81,7 +88,7 @@ public class StudioServiceImpl implements StudioService {
             existing.setStudioType(type);
         }
 
-        if (req.getArea() > existing.getStudioType().getMaxArea() || req.getArea() < existing.getStudioType().getMinArea()) {
+        if (req.getAcreage() > existing.getStudioType().getMaxArea() || req.getAcreage() < existing.getStudioType().getMinArea()) {
             throw new StudioException("Area out of range");
         }
 

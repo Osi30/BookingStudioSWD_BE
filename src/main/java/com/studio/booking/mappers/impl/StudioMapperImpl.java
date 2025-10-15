@@ -15,7 +15,7 @@ public class StudioMapperImpl implements StudioMapper {
         return Studio.builder()
                 .studioName(req.getStudioName())
                 .description(req.getDescription())
-                .area(req.getArea())
+                .acreage(req.getAcreage())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .status(req.getStatus())
@@ -26,7 +26,7 @@ public class StudioMapperImpl implements StudioMapper {
     public Studio updateEntity(Studio existing, StudioRequest req) {
         Optional.ofNullable(req.getStudioName()).ifPresent(existing::setStudioName);
         Optional.ofNullable(req.getDescription()).ifPresent(existing::setDescription);
-        Optional.ofNullable(req.getArea()).ifPresent(existing::setArea);
+        Optional.ofNullable(req.getAcreage()).ifPresent(existing::setAcreage);
         Optional.ofNullable(req.getStartTime()).ifPresent(existing::setStartTime);
         Optional.ofNullable(req.getEndTime()).ifPresent(existing::setEndTime);
         Optional.ofNullable(req.getStatus()).ifPresent(existing::setStatus);
@@ -39,9 +39,10 @@ public class StudioMapperImpl implements StudioMapper {
                 .id(studio.getId())
                 .studioName(studio.getStudioName())
                 .description(studio.getDescription())
-                .area(studio.getArea())
+                .acreage(studio.getAcreage())
                 .startTime(studio.getStartTime())
                 .endTime(studio.getEndTime())
+                .imageUrl(studio.getImageUrl())
                 .status(studio.getStatus())
                 .locationName(studio.getLocation() != null ? studio.getLocation().getLocationName() : null)
                 .studioTypeName(studio.getStudioType() != null ? studio.getStudioType().getName() : null)

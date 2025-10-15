@@ -35,6 +35,7 @@ dependencies {
     implementation("com.sun.mail:jakarta.mail:2.0.2")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("com.sendgrid:sendgrid-java:4.10.3")
+    implementation("com.cloudinary:cloudinary-http44:1.39.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

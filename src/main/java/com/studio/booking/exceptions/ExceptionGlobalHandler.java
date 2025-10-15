@@ -83,6 +83,16 @@ public class ExceptionGlobalHandler {
         return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(ImageException.class)
+    public ResponseEntity<BaseResponse> handleImageException(ImageException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(EmailException.class)
     public ResponseEntity<BaseResponse> handleEmailException(EmailException ex, WebRequest request) {
         BaseResponse exceptionResponse = BaseResponse.builder()
