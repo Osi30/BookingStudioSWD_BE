@@ -16,9 +16,10 @@ public class StudioResponse {
     private String id;
     private String studioName;
     private String description;
-    private Double area;
+    private Double acreage;
     private LocalTime startTime;
     private LocalTime endTime;
+    private String imageUrl;
     private StudioStatus status;
     private String locationName;
     private String studioTypeName;

@@ -2,6 +2,7 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioRequest;
+import com.studio.booking.services.CloudinaryService;
 import com.studio.booking.services.StudioService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/studios")
@@ -36,10 +40,14 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<BaseResponse> create(@RequestBody StudioRequest req) {
+    public ResponseEntity<BaseResponse> create(
+            @RequestPart StudioRequest req,
+            @RequestPart(required = false) MultipartFile imageFile
+    ) throws IOException {
+        req.setImage(imageFile);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(BaseResponse.builder()
                         .code(HttpStatus.CREATED.value())
@@ -48,7 +56,7 @@ public class StudioController {
                         .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(@PathVariable String id,
@@ -60,7 +68,7 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
@@ -70,7 +78,7 @@ public class StudioController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restore(@PathVariable String id) {

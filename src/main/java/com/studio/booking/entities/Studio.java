@@ -27,14 +27,17 @@ public class Studio {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "area")
-    private Double area;
+    @Column(name = "acreage")
+    private Double acreage;
 
     @Column(name = "start_time")
     private LocalTime startTime;
 
     @Column(name = "end_time")
     private LocalTime endTime;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @Column(name = "status")
     private StudioStatus status;
