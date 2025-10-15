@@ -1,5 +1,6 @@
 package com.studio.booking.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +26,8 @@ public class ServiceAssign {
     @JoinColumn(name = "service_id", referencedColumnName = "service_id")
     private Service service;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "studio_assign_id", referencedColumnName = "studio_assign_id")
     private StudioAssign studioAssign;
 }

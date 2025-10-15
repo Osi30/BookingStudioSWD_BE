@@ -19,5 +19,7 @@ public interface AccountService {
 
     String banAccount(String accountId);
 
+    String unban(String accountId);
+
     List<AccountResponse> getAllAccounts();
 }

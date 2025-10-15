@@ -1,9 +1,7 @@
 package com.studio.booking.exceptions;
 
 import com.studio.booking.dtos.BaseResponse;
-import com.studio.booking.exceptions.exceptions.AccountException;
-import com.studio.booking.exceptions.exceptions.AuthException;
-import com.studio.booking.exceptions.exceptions.EmailException;
+import com.studio.booking.exceptions.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -33,6 +31,56 @@ public class ExceptionGlobalHandler {
                 .data(request.getDescription(false))
                 .build();
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(StudioTypeException.class)
+    public ResponseEntity<BaseResponse> handleStudioTypeException(StudioTypeException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(StudioException.class)
+    public ResponseEntity<BaseResponse> handleStudioException(StudioException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BookingException.class)
+    public ResponseEntity<BaseResponse> handleBookingException(BookingException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PriceTableException.class)
+    public ResponseEntity<BaseResponse> handlePriceTableException(PriceTableException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<BaseResponse> handleServiceException(ServiceException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(EmailException.class)
