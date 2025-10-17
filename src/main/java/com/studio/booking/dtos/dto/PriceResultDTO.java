@@ -1,6 +1,5 @@
 package com.studio.booking.dtos.dto;
 
-import com.studio.booking.entities.PriceRule;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -4,10 +4,7 @@ import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.BookingResponse;
-import com.studio.booking.entities.Booking;
-import com.studio.booking.entities.Location;
-import com.studio.booking.entities.StudioAssign;
-import com.studio.booking.entities.StudioType;
+import com.studio.booking.entities.*;
 import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.BookingMapper;
@@ -31,7 +28,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper mapper;
 
     @Override
-    public BookingResponse createBooking(String accountId, BookingRequest bookingRequest) {
+    public Booking createBooking(String accountId, BookingRequest bookingRequest) {
         if (Validation.isNullOrEmpty(bookingRequest.getStudioTypeId())) {
             throw new BookingException("Studio Type is required");
         }
@@ -68,9 +65,7 @@ public class BookingServiceImpl implements BookingService {
         // Account
         booking.setAccount(accountService.getAccountById(accountId));
 
-        Booking saveBooking = bookingRepo.save(booking);
-
-        return mapper.toResponse(saveBooking);
+        return bookingRepo.save(booking);
     }
 
     @Override

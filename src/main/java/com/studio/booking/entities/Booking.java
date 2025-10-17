@@ -59,6 +59,9 @@ public class Booking {
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     private List<StudioAssign> studioAssigns;
 
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    private List<Payment> payments;
+
     @PrePersist
     public void generateId() {
         this.id = GenerateUtil.generateRandomWords(10);
