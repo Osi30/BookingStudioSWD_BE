@@ -6,6 +6,7 @@ import com.studio.booking.entities.Service;
 import com.studio.booking.entities.ServiceAssign;
 import com.studio.booking.entities.StudioAssign;
 import com.studio.booking.enums.ServiceStatus;
+import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.ServiceAssignRepo;
 import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.repositories.StudioAssignRepo;
@@ -13,6 +14,7 @@ import com.studio.booking.services.ServiceAssignService;
 import lombok.RequiredArgsConstructor;
 import com.studio.booking.exceptions.exceptions.ServiceException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @org.springframework.stereotype.Service
@@ -55,6 +57,25 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
                 .service(service)
                 .isActive(req.getIsActive() != null ? req.getIsActive() : true)
                 .build();
+    }
+
+    @Override
+    public List<ServiceAssign> createByList(List<String> serviceIds) {
+        List<ServiceAssign> serviceAssigns = new ArrayList<>();
+
+        List<Service> services = serviceRepo.findAllByIdIsInAndStatusIs(serviceIds, ServiceStatus.AVAILABLE);
+        if (services.size() != serviceIds.size()) {
+            throw new BookingException("There are less services available");
+        }
+
+        for (Service service : services) {
+            serviceAssigns.add(ServiceAssign.builder()
+                    .service(service)
+                    .isActive(true)
+                    .build());
+        }
+
+        return serviceAssigns;
     }
 
     @Override

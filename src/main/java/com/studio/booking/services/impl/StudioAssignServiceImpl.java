@@ -1,6 +1,5 @@
 package com.studio.booking.services.impl;
 
-import com.studio.booking.dtos.request.ServiceAssignRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.StudioAssignResponse;
 import com.studio.booking.entities.ServiceAssign;
@@ -10,7 +9,6 @@ import com.studio.booking.enums.AssignStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.StudioAssignRepo;
 import com.studio.booking.repositories.StudioRepo;
-import com.studio.booking.repositories.StudioTypeRepo;
 import com.studio.booking.services.PriceTableItemService;
 import com.studio.booking.services.ServiceAssignService;
 import com.studio.booking.services.StudioAssignService;
@@ -30,7 +28,6 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     private final PriceTableItemService priceTableItemService;
     private final StudioAssignRepo assignRepo;
     private final StudioRepo studioRepo;
-    private final StudioTypeRepo studioTypeRepo;
 
     @Override
     public List<StudioAssignResponse> getAll() {
@@ -86,12 +83,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         List<ServiceAssign> serviceAssigns = new ArrayList<>();
         double serviceTotal = 0D;
         if (Validation.isValidCollection(req.getServiceIds())) {
-            for (String serviceId : req.getServiceIds()) {
-                serviceAssigns.add(serviceAssignService.create(ServiceAssignRequest.builder()
-                        .serviceId(serviceId)
-                        .build()));
-            }
-
+            serviceAssigns = serviceAssignService.createByList(req.getServiceIds());
             serviceTotal = serviceAssigns.stream()
                     .mapToDouble(sa -> sa.getService().getServiceFee())
                     .sum();
