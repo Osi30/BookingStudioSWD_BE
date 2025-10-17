@@ -11,7 +11,6 @@ public interface StudioAssignService {
     List<StudioAssignResponse> getByBooking(String bookingId);
     List<StudioAssignResponse> getByStudio(String studioId);
     StudioAssign create(StudioAssignRequest request);
-    List<StudioAssign> createList(List<StudioAssignRequest> requests);
     StudioAssignResponse update(String id, StudioAssignRequest request);
     String delete(String id);
 }

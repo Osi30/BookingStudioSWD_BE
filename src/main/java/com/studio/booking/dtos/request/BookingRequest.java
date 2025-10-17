@@ -17,7 +17,7 @@ public class BookingRequest {
     private String studioTypeId;
     private String locationId;
     private String note;
+    private String phoneNumber;
     private BookingType bookingType;
-    private int studioQuantity;
     private List<StudioAssignRequest> studioAssignRequests;
 }

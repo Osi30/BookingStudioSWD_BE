@@ -23,14 +23,14 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<BaseResponse> createBooking(
-            @RequestHeader("Authorization") String token,
+//            @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
     ) {
-        String accountId = jwtService.getIdentifierFromToken(token);
+//        String accountId = jwtService.getIdentifierFromToken(token);
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Create booking successfully!")
-                .data(bookingService.createBooking(accountId, bookingRequest))
+                .data(bookingService.createBooking("ZDGEIAQRNG", bookingRequest))
                 .build());
     }
 

@@ -3,20 +3,22 @@ package com.studio.booking.services.impl;
 import com.studio.booking.dtos.request.ServiceAssignRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.StudioAssignResponse;
-import com.studio.booking.entities.Service;
 import com.studio.booking.entities.ServiceAssign;
 import com.studio.booking.entities.Studio;
 import com.studio.booking.entities.StudioAssign;
 import com.studio.booking.enums.AssignStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
-import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.repositories.StudioAssignRepo;
 import com.studio.booking.repositories.StudioRepo;
+import com.studio.booking.repositories.StudioTypeRepo;
+import com.studio.booking.services.PriceTableItemService;
 import com.studio.booking.services.ServiceAssignService;
 import com.studio.booking.services.StudioAssignService;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import com.studio.booking.exceptions.exceptions.AccountException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,8 +27,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class StudioAssignServiceImpl implements StudioAssignService {
     private final ServiceAssignService serviceAssignService;
+    private final PriceTableItemService priceTableItemService;
     private final StudioAssignRepo assignRepo;
     private final StudioRepo studioRepo;
+    private final StudioTypeRepo studioTypeRepo;
 
     @Override
     public List<StudioAssignResponse> getAll() {
@@ -54,48 +58,55 @@ public class StudioAssignServiceImpl implements StudioAssignService {
 
     @Override
     public StudioAssign create(StudioAssignRequest req) {
+        // Minus Buffer minutes
+        Long bufferMinutes = req.getBufferMinutes();
+        // For checking if it back to the yesterday
+        LocalDateTime startTimeAfterBuffer = req.getStartTime().minusMinutes(bufferMinutes);
+        if (startTimeAfterBuffer.toLocalDate() != req.getStartTime().toLocalDate()) {
+            req.setStartTime(req.getStartTime().toLocalDate().atStartOfDay());
+        }
+
+        // Find currently occupied studios
         Set<String> occupiedStudios = studioRepo.findOccupiedStudioIds(
                 req.getLocationId(), req.getStudioTypeId(),
-                req.getStartTime().toLocalTime(), req.getEndTime().toLocalTime()
+                req.getStartTime(), req.getEndTime()
         );
 
+        // Find currently available studios (N - No)
         List<Studio> availableStudio = studioRepo.findAvailableStudio(occupiedStudios);
 
         if (availableStudio.isEmpty()) {
             throw new BookingException("No studio found for the time interval");
         }
 
+        Double studioAmount = priceTableItemService
+                .getPriceByTypeAndTime(req.getStudioTypeId(), req.getStartTime(), req.getEndTime())
+                .getTotalPrice();
+
         List<ServiceAssign> serviceAssigns = new ArrayList<>();
+        double serviceTotal = 0D;
+        if (Validation.isValidCollection(req.getServiceIds())) {
+            for (String serviceId : req.getServiceIds()) {
+                serviceAssigns.add(serviceAssignService.create(ServiceAssignRequest.builder()
+                        .serviceId(serviceId)
+                        .build()));
+            }
 
-        for (String serviceId : req.getServiceIds()) {
-            serviceAssigns.add(serviceAssignService.create(ServiceAssignRequest.builder()
-                    .serviceId(serviceId)
-                    .build()));
+            serviceTotal = serviceAssigns.stream()
+                    .mapToDouble(sa -> sa.getService().getServiceFee())
+                    .sum();
         }
-
-        Double serviceTotal = serviceAssigns.stream()
-                .mapToDouble(sa -> sa.getService().getServiceFee())
-                .sum();
 
         return StudioAssign.builder()
                 .studio(availableStudio.getFirst())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
-                .studioAmount(req.getStudioAmount())
+                .studioAmount(studioAmount)
                 .serviceAmount(serviceTotal)
                 .additionTime(req.getAdditionTime())
                 .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
                 .serviceAssigns(serviceAssigns)
                 .build();
-    }
-
-    @Override
-    public List<StudioAssign> createList(List<StudioAssignRequest> requests) {
-        List<StudioAssign> studioAssigns = new ArrayList<>();
-        for (StudioAssignRequest req : requests) {
-            studioAssigns.add(create(req));
-        }
-        return studioAssigns;
     }
 
 

@@ -15,10 +15,12 @@ public interface PriceTableItemRepo extends JpaRepository<PriceTableItem, String
             FROM PriceTableItem pct
             JOIN PriceTable p ON pct.priceTable.id = p.id
             JOIN StudioType st ON pct.studioType.id = st.id
-            WHERE :date BETWEEN p.startDate AND p.endDate
+            WHERE :date >= p.startDate
+            AND :date <= p.endDate
             AND st.id = :studioTypeId
-            AND p.status = com.studio.booking.enums.PriceTableStatus.IS_HAPPENING
+            AND (p.status = com.studio.booking.enums.PriceTableStatus.IS_HAPPENING
+            OR p.status = com.studio.booking.enums.PriceTableStatus.COMING_SOON)
             ORDER BY p.priority ASC
             """)
-    PriceTableItem findFirstByStudioTypeAndDate(String studioTypeId, LocalDate date);
+    List<PriceTableItem> findFirstByStudioTypeAndDate(String studioTypeId, LocalDate date);
 }

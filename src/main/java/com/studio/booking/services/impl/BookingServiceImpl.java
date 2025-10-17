@@ -2,21 +2,22 @@ package com.studio.booking.services.impl;
 
 import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.request.BookingStatusRequest;
+import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.Booking;
+import com.studio.booking.entities.Location;
 import com.studio.booking.entities.StudioAssign;
+import com.studio.booking.entities.StudioType;
 import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.BookingMapper;
 import com.studio.booking.repositories.BookingRepo;
-import com.studio.booking.services.AccountService;
-import com.studio.booking.services.BookingService;
-import com.studio.booking.services.StudioAssignService;
-import com.studio.booking.services.StudioTypeService;
+import com.studio.booking.services.*;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,6 +25,7 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
     private final StudioTypeService studioTypeService;
     private final StudioAssignService studioAssignService;
+    private final LocationService locationService;
     private final AccountService accountService;
     private final BookingRepo bookingRepo;
     private final BookingMapper mapper;
@@ -34,26 +36,37 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Studio Type is required");
         }
 
-        if (bookingRequest.getStudioQuantity() <= 0) {
+        if (bookingRequest.getStudioAssignRequests().isEmpty()) {
             throw new BookingException("Studio Quantity is required");
         }
 
+        // Studio Type
+        StudioType studioType = studioTypeService.getById(bookingRequest.getStudioTypeId());
+        Long bufferMinutes = (long) (double) studioType.getBufferTime();
+
+        // Location
+        Location location = locationService.getById(bookingRequest.getLocationId());
+
         // Studio Assigns
-        List<StudioAssign> assigns = studioAssignService.createList(bookingRequest.getStudioAssignRequests());
+        List<StudioAssign> studioAssigns = new ArrayList<>();
+        for (StudioAssignRequest req : bookingRequest.getStudioAssignRequests()) {
+            req.setStudioTypeId(studioType.getId());
+            req.setLocationId(location.getId());
+            req.setBufferMinutes(bufferMinutes);
+            studioAssigns.add(studioAssignService.create(req));
+        }
 
         Booking booking = mapper.toBooking(bookingRequest);
         booking.setStatus(BookingStatus.IN_PROGRESS);
-        booking.setStudioAssigns(assigns);
-        booking.setTotal(bookingRequest.getStudioAssignRequests()
+        booking.setStudioType(studioType);
+        booking.setStudioAssigns(studioAssigns);
+        booking.setTotal(studioAssigns
                 .stream().mapToDouble(sa -> sa.getStudioAmount() + sa.getServiceAmount())
                 .sum()
         );
 
         // Account
         booking.setAccount(accountService.getAccountById(accountId));
-
-        // Studio Type
-        booking.setStudioType(studioTypeService.getById(bookingRequest.getStudioTypeId()));
 
         Booking saveBooking = bookingRepo.save(booking);
 

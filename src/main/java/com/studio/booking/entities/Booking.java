@@ -45,6 +45,9 @@ public class Booking {
     @Column(name = "booking_type")
     private BookingType bookingType;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id", referencedColumnName = "account_id")
     private Account account;

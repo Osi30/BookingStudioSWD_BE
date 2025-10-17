@@ -14,10 +14,11 @@ import com.studio.booking.repositories.PriceTableItemRepo;
 import com.studio.booking.repositories.PriceTableRepo;
 import com.studio.booking.repositories.StudioTypeRepo;
 import com.studio.booking.services.PriceTableItemService;
+import com.studio.booking.utils.BitUtil;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -91,15 +92,17 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
 
     @Override
     public PriceResultResponse getPriceByTypeAndTime(String studioTypeId, LocalDateTime startTime, LocalDateTime endTime) {
-        PriceTableItem priceItem = itemRepo.findFirstByStudioTypeAndDate(
+        List<PriceTableItem> priceItems = itemRepo.findFirstByStudioTypeAndDate(
                 studioTypeId, startTime.toLocalDate()
         );
 
-        if (priceItem == null) {
+        if (!Validation.isValidCollection(priceItems)) {
             throw new PriceTableException("There are no price items for this studio type");
         }
 
-        int dayBit = calculateDateBit(startTime.toLocalDate());
+        PriceTableItem priceItem = priceItems.getFirst();
+
+        int dayBit = BitUtil.calculateDateBit(startTime.toLocalDate());
 
         List<PriceRule> allRules = priceItem.getRules();
         List<PriceRule> applicableRules = allRules.stream()
@@ -134,7 +137,7 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
             }
 
             // Update if last result has same price rule
-            PriceResultDTO priceResultDTO = priceResults.getLast();
+            PriceResultDTO priceResultDTO = Validation.isValidCollection(priceResults) ? priceResults.getLast() : null;
             if (priceResultDTO != null) {
                 priceResultDTO.setEndTime(beginTime.plusHours(1));
             } else {
@@ -193,15 +196,6 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
         return applicableRules.stream()
                 .filter(r -> r.getDayFilter() != null && r.getDayFilter() != 0)
                 .findAny().orElse(null);
-    }
-
-    private int calculateDateBit(LocalDate date) {
-        // Monday: 1, Tuesday: 2
-        int dayOfWeek = date.getDayOfWeek().getValue();
-        int bitIndex = dayOfWeek - 1;
-
-        // 2^n (2^bitIndex)
-        return 1 << bitIndex;
     }
 
     private boolean isDayRuleApplicable(PriceRule rule, int dayBit) {
