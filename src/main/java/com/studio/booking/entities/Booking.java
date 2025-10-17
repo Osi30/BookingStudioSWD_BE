@@ -45,6 +45,9 @@ public class Booking {
     @Column(name = "booking_type")
     private BookingType bookingType;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id", referencedColumnName = "account_id")
     private Account account;
@@ -55,6 +58,9 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     private List<StudioAssign> studioAssigns;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 
     @PrePersist
     public void generateId() {

@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -15,7 +17,7 @@ import java.time.LocalTime;
 @Builder
 public class PriceRuleRequest {
     private String priceTableItemId;
-    private Integer dayFilter;
+    private List<DayOfWeek> daysOfWeek;
     private LocalTime startTime;
     private LocalTime endTime;
     private Double pricePerUnit;
