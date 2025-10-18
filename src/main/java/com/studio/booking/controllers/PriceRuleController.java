@@ -25,7 +25,19 @@ public class PriceRuleController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    @GetMapping()
+    public ResponseEntity<BaseResponse> getByItemId(
+            @RequestParam String studioTypeId,
+            @RequestParam String priceTableId
+    ) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Get rules by item successfully!")
+                .data(ruleService.getByTableAndType(priceTableId, studioTypeId))
+                .build());
+    }
+
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody PriceRuleRequest req) {
@@ -36,7 +48,7 @@ public class PriceRuleController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(@PathVariable String id,
@@ -48,7 +60,7 @@ public class PriceRuleController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {

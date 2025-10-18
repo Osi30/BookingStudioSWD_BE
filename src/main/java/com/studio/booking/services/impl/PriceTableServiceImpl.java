@@ -33,6 +33,14 @@ public class PriceTableServiceImpl implements PriceTableService {
     }
 
     @Override
+    public List<PriceTableResponse> getByTypeId(String typeId){
+        return priceTableRepo.findAllByStudioType(typeId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
     public PriceTableResponse create(PriceTableRequest req) {
         PriceTable table = PriceTable.builder()
                 .startDate(req.getStartDate())
