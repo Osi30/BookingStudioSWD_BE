@@ -55,6 +55,11 @@ public class StudioAssignServiceImpl implements StudioAssignService {
 
     @Override
     public StudioAssign create(StudioAssignRequest req) {
+        // Validate
+        if (!req.getStartTime().isBefore(req.getEndTime())) {
+            throw new BookingException("Start time cannot be after end time");
+        }
+
         // Minus Buffer minutes
         Long bufferMinutes = req.getBufferMinutes();
         // For checking if it back to the yesterday

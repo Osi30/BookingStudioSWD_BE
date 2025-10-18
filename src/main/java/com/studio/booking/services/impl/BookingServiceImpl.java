@@ -29,12 +29,17 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createBooking(String accountId, BookingRequest bookingRequest) {
+        // Validation
         if (Validation.isNullOrEmpty(bookingRequest.getStudioTypeId())) {
             throw new BookingException("Studio Type is required");
         }
 
         if (bookingRequest.getStudioAssignRequests().isEmpty()) {
             throw new BookingException("Studio Quantity is required");
+        }
+
+        if (Validation.isNullOrEmpty(bookingRequest.getPhoneNumber())){
+            throw new BookingException("Phone Number is required");
         }
 
         // Studio Type
