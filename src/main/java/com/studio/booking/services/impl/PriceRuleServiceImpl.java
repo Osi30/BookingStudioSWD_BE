@@ -30,6 +30,14 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     }
 
     @Override
+    public List<PriceRuleResponse> getByTableAndType(String tableId, String typeId) {
+        return ruleRepo.findAllByTableAndStudioType(tableId, typeId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
     public PriceRuleResponse create(PriceRuleRequest req) {
         PriceTableItem item = itemRepo.findById(req.getPriceTableItemId())
                 .orElseThrow(() -> new AccountException("PriceTableItem not found with id: " + req.getPriceTableItemId()));
