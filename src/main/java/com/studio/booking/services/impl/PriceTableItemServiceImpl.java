@@ -14,10 +14,11 @@ import com.studio.booking.repositories.PriceTableItemRepo;
 import com.studio.booking.repositories.PriceTableRepo;
 import com.studio.booking.repositories.StudioTypeRepo;
 import com.studio.booking.services.PriceTableItemService;
+import com.studio.booking.utils.BitUtil;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -91,15 +92,17 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
 
     @Override
     public PriceResultResponse getPriceByTypeAndTime(String studioTypeId, LocalDateTime startTime, LocalDateTime endTime) {
-        PriceTableItem priceItem = itemRepo.findFirstByStudioTypeAndDate(
+        List<PriceTableItem> priceItems = itemRepo.findFirstByStudioTypeAndDate(
                 studioTypeId, startTime.toLocalDate()
         );
 
-        if (priceItem == null) {
+        if (!Validation.isValidCollection(priceItems)) {
             throw new PriceTableException("There are no price items for this studio type");
         }
 
-        int dayBit = calculateDateBit(startTime.toLocalDate());
+        PriceTableItem priceItem = priceItems.getFirst();
+
+        int dayBit = BitUtil.calculateDateBit(startTime.toLocalDate());
 
         List<PriceRule> allRules = priceItem.getRules();
         List<PriceRule> applicableRules = allRules.stream()
@@ -109,9 +112,10 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
                     }
 
                     // Price Rule by Time
-                    if (r.getStartTime() != null && r.getEndTime() != null) {
-                        return (r.getStartTime().isBefore(endTime.toLocalTime())
-                                && r.getEndTime().isAfter(startTime.toLocalTime()));
+                    if (r.getStartTime() != null && r.getEndTime() != null
+                            && isInTimeInterval(r, dayBit, startTime, endTime)) {
+                        // In Time Interval
+                        return true;
                     }
 
                     // Price Rule by Date
@@ -133,9 +137,10 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
                 priceRule.setPricePerUnit(priceItem.getDefaultPrice());
             }
 
-            // Update if last result has same price rule
-            PriceResultDTO priceResultDTO = priceResults.getLast();
-            if (priceResultDTO != null) {
+            // Update if last result has same price
+            PriceResultDTO priceResultDTO = Validation.isValidCollection(priceResults) ? priceResults.getLast() : null;
+            if (priceResultDTO != null
+                    && priceResultDTO.getPrice().equals(priceRule.getPricePerUnit())) {
                 priceResultDTO.setEndTime(beginTime.plusHours(1));
             } else {
                 priceResults.add(PriceResultDTO.builder()
@@ -173,7 +178,7 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
 
         // Rule for Special Date
         rule = applicableRules.stream()
-                .filter(r -> r.getDate() != null)
+                .filter(r -> r.getDate() != null && r.getStartTime() == null && r.getEndTime() == null)
                 .findAny().orElse(null);
 
         if (rule != null) {
@@ -182,26 +187,38 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
 
         // Rule for Time Interval in Normal Date
         rule = applicableRules.stream()
-                .filter(r -> r.getStartTime() != null && r.getEndTime() != null)
+                .filter(r -> r.getDayFilter() != null && r.getDayFilter() != 0
+                        && r.getStartTime() != null && r.getEndTime() != null)
                 .findAny().orElse(null);
 
-        if (rule != null) {
+        if (rule != null && (
+                rule.getStartTime().isBefore(endTime)
+                        && rule.getEndTime().isAfter(startTime)
+        )) {
             return rule;
         }
 
         // Rule for Normal Date
         return applicableRules.stream()
-                .filter(r -> r.getDayFilter() != null && r.getDayFilter() != 0)
+                .filter(r -> r.getDayFilter() != null && r.getDayFilter() != 0
+                        && r.getStartTime() == null && r.getEndTime() == null)
                 .findAny().orElse(null);
     }
 
-    private int calculateDateBit(LocalDate date) {
-        // Monday: 1, Tuesday: 2
-        int dayOfWeek = date.getDayOfWeek().getValue();
-        int bitIndex = dayOfWeek - 1;
+    private boolean isInTimeInterval(
+            PriceRule r, int dayBit,
+            LocalDateTime startTime, LocalDateTime endTime
+    ) {
+        if (r.getStartTime().isBefore(endTime.toLocalTime())
+                && r.getEndTime().isAfter(startTime.toLocalTime())) {
+            if (r.getDate() != null) {
+                return r.getDate().equals(startTime.toLocalDate());
+            } else {
+                return isDayRuleApplicable(r, dayBit);
+            }
+        }
 
-        // 2^n (2^bitIndex)
-        return 1 << bitIndex;
+        return false;
     }
 
     private boolean isDayRuleApplicable(PriceRule rule, int dayBit) {

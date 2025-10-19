@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface BookingRepo extends JpaRepository<Booking, String> {
     List<Booking> findAllByStatusNot(BookingStatus status);
+    List<Booking> findAllByAccount_Id(String account);
 }

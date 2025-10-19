@@ -11,6 +11,7 @@ public interface ServiceAssignService {
     List<ServiceAssignResponse> getByStudioAssign(String studioAssignId);
     List<ServiceAssignResponse> getByService(String serviceId);
     ServiceAssign create(ServiceAssignRequest req);
+    List<ServiceAssign> createByList(List<String> serviceIds);
     ServiceAssignResponse update(String id, ServiceAssignRequest req);
     String delete(String id);
 }

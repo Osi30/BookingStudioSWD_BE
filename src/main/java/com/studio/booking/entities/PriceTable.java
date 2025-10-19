@@ -1,5 +1,6 @@
 package com.studio.booking.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.studio.booking.enums.PriceTableStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

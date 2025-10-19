@@ -30,6 +30,13 @@ FROM openjdk:21-jdk-slim
 #2 Set Working Directory
 WORKDIR /app
 
+#3 Set Time Zone
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Asia/Ho_Chi_Minh
+
 #3 Copy Compiled Java App (JAR) from 'build' Stage to WORKDIR and Renamed to app.jar
 COPY --from=build /app/build/libs/*.jar app.jar
 

@@ -7,9 +7,14 @@ import com.studio.booking.entities.PriceTableItem;
 import com.studio.booking.repositories.PriceRuleRepo;
 import com.studio.booking.repositories.PriceTableItemRepo;
 import com.studio.booking.services.PriceRuleService;
+import com.studio.booking.utils.BitUtil;
+import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.studio.booking.exceptions.exceptions.AccountException;
+
+import java.time.DayOfWeek;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -27,13 +32,25 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     }
 
     @Override
+    public List<PriceRuleResponse> getByTableAndType(String tableId, String typeId) {
+        return ruleRepo.findAllByTableAndStudioType(tableId, typeId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
     public PriceRuleResponse create(PriceRuleRequest req) {
         PriceTableItem item = itemRepo.findById(req.getPriceTableItemId())
                 .orElseThrow(() -> new AccountException("PriceTableItem not found with id: " + req.getPriceTableItemId()));
 
+        int dayFilter = req.getDaysOfWeek()
+                .stream().mapToInt(BitUtil::calculateDayBit)
+                .sum();
+
         PriceRule rule = PriceRule.builder()
                 .priceTableItem(item)
-                .dayFilter(req.getDayFilter())
+                .dayFilter(dayFilter)
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .pricePerUnit(req.getPricePerUnit())
@@ -51,7 +68,12 @@ public class PriceRuleServiceImpl implements PriceRuleService {
         PriceRule rule = ruleRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceRule not found with id: " + id));
 
-        if (req.getDayFilter() != null) rule.setDayFilter(req.getDayFilter());
+        if (Validation.isValidCollection(req.getDaysOfWeek())) {
+            int dayFilter = req.getDaysOfWeek()
+                    .stream().mapToInt(BitUtil::calculateDayBit)
+                    .sum();
+            rule.setDayFilter(dayFilter);
+        }
         if (req.getStartTime() != null) rule.setStartTime(req.getStartTime());
         if (req.getEndTime() != null) rule.setEndTime(req.getEndTime());
         if (req.getPricePerUnit() != null) rule.setPricePerUnit(req.getPricePerUnit());
@@ -75,7 +97,10 @@ public class PriceRuleServiceImpl implements PriceRuleService {
         return PriceRuleResponse.builder()
                 .id(rule.getId())
                 .priceTableItemId(rule.getPriceTableItem() != null ? rule.getPriceTableItem().getId() : null)
-                .dayFilter(rule.getDayFilter())
+                .dayFilter(Arrays.stream(DayOfWeek.values())
+                        .filter(dow -> rule.getDayFilter() != null
+                                && (rule.getDayFilter() & BitUtil.calculateDayBit(dow)) > 0)
+                        .toList())
                 .startTime(rule.getStartTime())
                 .endTime(rule.getEndTime())
                 .pricePerUnit(rule.getPricePerUnit())

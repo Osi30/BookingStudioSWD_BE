@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ServiceRepo extends JpaRepository<Service, String> {
     List<Service> findAllByStatusNot(ServiceStatus status);
+
+    List<Service> findAllByIdIsInAndStatusIs(List<String> ids, ServiceStatus status);
 }

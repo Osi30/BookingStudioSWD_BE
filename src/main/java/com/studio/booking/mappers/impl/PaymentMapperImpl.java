@@ -1,12 +1,23 @@
 package com.studio.booking.mappers.impl;
 
+import com.studio.booking.dtos.request.PaymentRequest;
 import com.studio.booking.dtos.response.PaymentResponse;
 import com.studio.booking.entities.Payment;
 import com.studio.booking.mappers.PaymentMapper;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class PaymentMapperImpl implements PaymentMapper {
+    private final ModelMapper modelMapper;
+
+    @Override
+    public Payment toPayment(PaymentRequest paymentRequest) {
+        return modelMapper.map(paymentRequest, Payment.class);
+    }
+
     @Override
     public PaymentResponse toResponse(Payment payment) {
         return PaymentResponse.builder()
