@@ -81,6 +81,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<BookingResponse> getBookingsByAccount(String accountId) {
+        return bookingRepo.findAllByAccount_Id(accountId).stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public BookingResponse getById(String id) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));

@@ -57,7 +57,19 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    @GetMapping("/profile")
+    public ResponseEntity<BaseResponse> getProfileBooking(
+            @RequestHeader("Authorization") String token
+    ) {
+        String accountId = jwtService.getIdentifierFromToken(token);
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Get all bookings successfully!")
+                .data(bookingService.getBookingsByAccount(accountId))
+                .build());
+    }
+
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
@@ -68,7 +80,7 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
@@ -79,7 +91,7 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
@@ -91,7 +103,7 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(@PathVariable String id,
