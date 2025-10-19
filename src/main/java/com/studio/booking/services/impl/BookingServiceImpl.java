@@ -29,12 +29,17 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createBooking(String accountId, BookingRequest bookingRequest) {
+        // Validation
         if (Validation.isNullOrEmpty(bookingRequest.getStudioTypeId())) {
             throw new BookingException("Studio Type is required");
         }
 
         if (bookingRequest.getStudioAssignRequests().isEmpty()) {
             throw new BookingException("Studio Quantity is required");
+        }
+
+        if (Validation.isNullOrEmpty(bookingRequest.getPhoneNumber())){
+            throw new BookingException("Phone Number is required");
         }
 
         // Studio Type
@@ -71,6 +76,13 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingResponse> getAll() {
         return bookingRepo.findAll().stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<BookingResponse> getBookingsByAccount(String accountId) {
+        return bookingRepo.findAllByAccount_Id(accountId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }

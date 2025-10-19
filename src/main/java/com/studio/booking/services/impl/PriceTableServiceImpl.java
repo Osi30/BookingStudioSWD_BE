@@ -5,6 +5,7 @@ import com.studio.booking.dtos.response.PriceTableResponse;
 import com.studio.booking.entities.PriceTable;
 import com.studio.booking.enums.PriceTableStatus;
 import com.studio.booking.exceptions.exceptions.AccountException;
+import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.PriceTableRepo;
 import com.studio.booking.services.PriceTableService;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,11 @@ public class PriceTableServiceImpl implements PriceTableService {
 
     @Override
     public PriceTableResponse create(PriceTableRequest req) {
+        // Validate
+        if (!req.getStartDate().isBefore(req.getEndDate())) {
+            throw new BookingException("Start time cannot be after end time");
+        }
+
         PriceTable table = PriceTable.builder()
                 .startDate(req.getStartDate())
                 .endDate(req.getEndDate())
