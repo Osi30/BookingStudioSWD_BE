@@ -57,6 +57,10 @@ public class Account {
     @Column(name = "status")
     private AccountStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "location_id", referencedColumnName = "location_id")
+    private Location location;
+
     @PrePersist
     public void generateId() {
         this.id = GenerateUtil.generateRandomWords(10);

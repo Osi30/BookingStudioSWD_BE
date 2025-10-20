@@ -1,6 +1,7 @@
 package com.studio.booking.services;
 
 import com.studio.booking.dtos.request.StudioRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.dtos.response.StudioResponse;
 
 import java.io.IOException;
@@ -13,4 +14,6 @@ public interface StudioService {
     StudioResponse update(String id, StudioRequest req);
     String delete(String id);
     String restore(String id);
+    List<StudioResponse> getForStaff(String employeeAccountId);
+    StudioResponse updateStatus(String id, UpdateStatusRequest request);
 }

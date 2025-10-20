@@ -13,4 +13,6 @@ public interface StudioAssignService {
     StudioAssign create(StudioAssignRequest request);
     StudioAssignResponse update(String id, StudioAssignRequest request);
     String delete(String id);
+    StudioAssignResponse attachStudioToExistingAssign(String assignId, String studioId);
+//    StudioAssign assignStudio(String studioId, StudioAssignRequest request);
 }

@@ -13,4 +13,6 @@ public interface BookingService {
     BookingResponse getById(String id);
     BookingResponse updateStatus(String id, BookingStatusRequest req);
     String cancelBooking(String id, String note);
+
+    List<BookingResponse> getForEmployee(String employeeAccountId);
 }

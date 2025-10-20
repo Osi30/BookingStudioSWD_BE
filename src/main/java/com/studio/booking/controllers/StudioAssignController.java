@@ -71,4 +71,28 @@ public class StudioAssignController {
                 .message(service.delete(id))
                 .build());
     }
+
+    @PostMapping("/{assignId}/attach-studio/{studioId}")
+    public ResponseEntity<BaseResponse> attachStudio(@PathVariable String assignId,
+                                                     @PathVariable String studioId) {
+        var res = service.attachStudioToExistingAssign(assignId, studioId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Attach studio to assignment successfully!")
+                        .data(res)
+                        .build());
+    }
+
+//    @PostMapping("/assign/{studioId}")
+//    public ResponseEntity<BaseResponse> assignSpecific(@PathVariable String studioId,
+//                                                       @RequestBody StudioAssignRequest req) {
+//        var assigned = service.assignStudio(studioId, req);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(BaseResponse.builder()
+//                        .code(HttpStatus.CREATED.value())
+//                        .message("Assign studio successfully!")
+//                        .data(assigned.getId())
+//                        .build());
+//    }
 }

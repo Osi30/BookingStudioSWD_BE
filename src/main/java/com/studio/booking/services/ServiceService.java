@@ -1,6 +1,7 @@
 package com.studio.booking.services;
 
 import com.studio.booking.dtos.request.ServiceRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.dtos.response.ServiceResponse;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface ServiceService {
     ServiceResponse create(ServiceRequest req);
     ServiceResponse update(String id, ServiceRequest req);
     String delete(String id);
+    ServiceResponse updateStatus(String id, UpdateStatusRequest request);
 }

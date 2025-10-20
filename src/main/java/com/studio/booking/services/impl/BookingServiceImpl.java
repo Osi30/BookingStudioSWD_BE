@@ -5,6 +5,7 @@ import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.*;
+import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.BookingMapper;
@@ -109,5 +110,22 @@ public class BookingServiceImpl implements BookingService {
         booking.setNote(note != null ? note : "Cancelled by admin");
         bookingRepo.save(booking);
         return "Booking cancelled successfully!";
+    }
+
+    @Override
+    public List<BookingResponse> getForEmployee(String employeeAccountId) {
+        Account employee = accountService.getAccountById(employeeAccountId);
+        if (employee.getRole() != AccountRole.STAFF) {
+            throw new BookingException("Only staff can view bookings by location");
+        }
+        if (employee.getLocation() == null) {
+            throw new BookingException("Staff does not have a location assigned");
+        }
+
+        String locationId = employee.getLocation().getId();
+        return bookingRepo.findAllByLocationId(locationId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 }
