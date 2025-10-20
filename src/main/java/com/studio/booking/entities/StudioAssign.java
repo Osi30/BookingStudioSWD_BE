@@ -40,11 +40,11 @@ public class StudioAssign {
     @Column(name = "status")
     private AssignStatus status;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "studio_id", referencedColumnName = "studio_id")
     private Studio studio;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "booking_id", referencedColumnName = "booking_id")
     private Booking booking;
 

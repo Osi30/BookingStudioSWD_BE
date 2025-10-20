@@ -7,4 +7,5 @@ import com.studio.booking.entities.Booking;
 public interface BookingMapper {
     Booking toBooking(BookingRequest bookingRequest);
     BookingResponse toResponse(Booking booking);
+    Booking updateBooking(Booking booking, BookingRequest bookingRequest);
 }

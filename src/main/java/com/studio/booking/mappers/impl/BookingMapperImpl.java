@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class BookingMapperImpl implements BookingMapper {
@@ -32,5 +34,12 @@ public class BookingMapperImpl implements BookingMapper {
                 .accountName(booking.getAccount() != null ? booking.getAccount().getFullName() : null)
                 .studioTypeName(booking.getStudioType() != null ? booking.getStudioType().getName() : null)
                 .build();
+    }
+
+    @Override
+    public Booking updateBooking(Booking booking, BookingRequest req) {
+        Optional.ofNullable(req.getNote()).ifPresent(booking::setNote);
+        Optional.ofNullable(req.getPhoneNumber()).ifPresent(booking::setPhoneNumber);
+        return booking;
     }
 }

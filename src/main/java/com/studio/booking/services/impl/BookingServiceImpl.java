@@ -5,7 +5,9 @@ import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.*;
+import com.studio.booking.enums.AssignStatus;
 import com.studio.booking.enums.BookingStatus;
+import com.studio.booking.enums.BookingType;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.BookingMapper;
 import com.studio.booking.repositories.BookingRepo;
@@ -38,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Studio Quantity is required");
         }
 
-        if (Validation.isNullOrEmpty(bookingRequest.getPhoneNumber())){
+        if (Validation.isNullOrEmpty(bookingRequest.getPhoneNumber())) {
             throw new BookingException("Phone Number is required");
         }
 
@@ -113,13 +115,60 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public BookingResponse updateBooking(String id, BookingRequest req) {
+        Booking booking = getBookingById(id);
+        booking = mapper.updateBooking(booking, req);
+
+        Double updatedAmount = 0D;
+        // Assign new studio
+        if (Validation.isValidCollection(req.getStudioAssignRequests())) {
+            List<StudioAssign> studioAssigns = new ArrayList<>();
+            for (StudioAssignRequest request : req.getStudioAssignRequests()) {
+                request.setStudioTypeId(req.getStudioTypeId());
+                request.setLocationId(req.getLocationId());
+                request.setBufferMinutes(booking.getStudioType().getBufferTime().longValue());
+                studioAssigns.add(studioAssignService.create(request));
+            }
+
+            Double total = studioAssigns
+                    .stream().mapToDouble(sa -> sa.getStudioAmount() + sa.getServiceAmount())
+                    .sum();
+            updatedAmount = total;
+            booking.getStudioAssigns().addAll(studioAssigns);
+            booking.setTotal(booking.getTotal() + total);
+        }
+
+        BookingResponse response = mapper.toResponse(bookingRepo.save(booking));
+        response.setUpdatedAmount(updatedAmount);
+        return response;
+    }
+
+    @Override
     public String cancelBooking(String id, String note) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
 
-        booking.setStatus(BookingStatus.CANCELLED);
-        booking.setNote(note != null ? note : "Cancelled by admin");
+        if (!booking.getStatus().equals(BookingStatus.IN_PROGRESS)) {
+            throw new BookingException("Booking is not in progress for cancellation");
+        }
+
+        List<StudioAssign> activeStudioAssigns = booking.getStudioAssigns()
+                .stream().filter(sa -> sa.getStatus().equals(AssignStatus.IS_HAPPENING))
+                .toList();
+        if (Validation.isValidCollection(activeStudioAssigns)) {
+            throw new BookingException("Some studio assign in booking is already in progress");
+        }
+
+        // If pay full then customer will be refund, if deposit then booking is being cancelled
+        booking.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
+                ? BookingStatus.AWAITING_REFUND : BookingStatus.CANCELLED);
         bookingRepo.save(booking);
+
         return "Booking cancelled successfully!";
+    }
+
+    private Booking getBookingById(String id) {
+        return bookingRepo.findById(id)
+                .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
     }
 }

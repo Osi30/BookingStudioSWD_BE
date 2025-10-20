@@ -24,4 +24,6 @@ public class StudioAssignResponse {
     private Double serviceAmount;
     private Double additionTime;
     private AssignStatus status;
+
+    private Double updatedAmount;
 }

@@ -23,7 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/bookings")
+@RequestMapping("/api/bookings")
 @RequiredArgsConstructor
 public class BookingController {
     private final BookingService bookingService;
@@ -32,11 +32,11 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<BaseResponse> createBooking(
-//            @RequestHeader("Authorization") String token,
+            @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
     ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
-//        String accountId = jwtService.getIdentifierFromToken(token);
-        Booking booking = bookingService.createBooking("ZDGEIAQRNG", bookingRequest);
+        String accountId = jwtService.getIdentifierFromToken(token);
+        Booking booking = bookingService.createBooking(accountId, bookingRequest);
 
         // Payment
         Payment payment = paymentService.createPayment(PaymentRequest.builder()
@@ -100,6 +100,18 @@ public class BookingController {
                 .code(HttpStatus.OK.value())
                 .message("Update booking status successfully!")
                 .data(bookingService.updateStatus(id, req))
+                .build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BaseResponse> update(
+            @PathVariable String id,
+            @RequestBody BookingRequest req
+    ) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Update booking successfully!")
+                .data(bookingService.updateBooking(id, req))
                 .build());
     }
 

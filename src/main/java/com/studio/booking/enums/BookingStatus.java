@@ -8,7 +8,9 @@ import lombok.Getter;
 public enum BookingStatus {
     IN_PROGRESS("Booking in progress"),
     COMPLETED("Booking completed"),
-    CANCELLED("Booking cancelled");
+    CANCELLED("Booking cancelled"),
+    AWAITING_REFUND("Awaiting cancelled refund")
+    ;
 
     private final String description;
 }

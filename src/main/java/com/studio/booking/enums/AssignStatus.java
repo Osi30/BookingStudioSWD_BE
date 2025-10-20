@@ -9,7 +9,9 @@ public enum AssignStatus {
     COMING_SOON("Coming Soon"),
     IS_HAPPENING("Is Happening"),
     ENDED("Ended"),
-    CANCELLED("Cancelled");
+    CANCELLED("Cancelled"),
+    AWAITING_REFUND("Awaiting Refund")
+    ;
 
     private final String description;
 }
