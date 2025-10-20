@@ -1,6 +1,7 @@
 package com.studio.booking.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.studio.booking.enums.ServiceAssignStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,8 +20,8 @@ public class ServiceAssign {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
+    @Column(name = "status")
+    private ServiceAssignStatus status;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "service_id", referencedColumnName = "service_id")

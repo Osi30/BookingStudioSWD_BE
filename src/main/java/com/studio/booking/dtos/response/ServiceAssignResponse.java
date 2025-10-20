@@ -1,5 +1,6 @@
 package com.studio.booking.dtos.response;
 
+import com.studio.booking.enums.ServiceAssignStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class ServiceAssignResponse {
     private String serviceId;
     private String serviceName;
     private Double serviceFee;
-    private Boolean isActive;
+    private ServiceAssignStatus status;
 }
