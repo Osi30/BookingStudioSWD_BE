@@ -103,6 +103,18 @@ public class BookingController {
                 .build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<BaseResponse> update(
+            @PathVariable String id,
+            @RequestBody BookingRequest req
+    ) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Update booking successfully!")
+                .data(bookingService.updateBooking(id, req))
+                .build());
+    }
+
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/cancel")

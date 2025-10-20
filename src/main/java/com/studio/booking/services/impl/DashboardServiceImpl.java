@@ -5,6 +5,7 @@ import com.studio.booking.entities.Payment;
 import com.studio.booking.entities.ServiceAssign;
 import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.enums.PaymentStatus;
+import com.studio.booking.enums.ServiceAssignStatus;
 import com.studio.booking.repositories.*;
 import com.studio.booking.services.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +55,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         // Tính top service
         Map<String, Long> serviceUsage = serviceAssignRepo.findAll().stream()
-                .filter(ServiceAssign::getIsActive)
+                .filter(s -> s.getStatus().equals(ServiceAssignStatus.ACTIVE))
                 .collect(Collectors.groupingBy(
                         sa -> sa.getService().getServiceName(),
                         Collectors.counting()
