@@ -2,7 +2,7 @@
 
 # Stage 1: Build the Spring Boot application
 #1 JDK and Assign this Stage Name to be 'build'
-FROM openjdk:21-jdk-slim AS build
+FROM openjdk:21.0.1-jdk-slim AS build
 
 #2 Set Working Directory
 WORKDIR /app
