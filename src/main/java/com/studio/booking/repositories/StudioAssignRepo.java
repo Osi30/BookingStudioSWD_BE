@@ -21,4 +21,14 @@ public interface StudioAssignRepo extends JpaRepository<StudioAssign, String> {
     @Query("select sa from StudioAssign sa where sa.id = :id")
     Optional<StudioAssign> findByIdForUpdate(@Param("id") String id);
     boolean existsByBooking_IdAndStatusNot(String bookingId, AssignStatus status);
+    @Query("""
+       select coalesce(
+                 sum(coalesce(sa.studioAmount, 0) + coalesce(sa.serviceAmount, 0))
+             , 0)
+       from StudioAssign sa
+       where sa.booking.id = :bookingId
+         and sa.status <> :excluded
+       """)
+    Double sumAmountsByBookingIdAndStatusNot(@Param("bookingId") String bookingId,
+                                             @Param("excluded") com.studio.booking.enums.AssignStatus excluded);
 }
