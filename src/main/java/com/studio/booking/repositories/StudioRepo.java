@@ -16,7 +16,7 @@ import java.util.Set;
 
 public interface StudioRepo extends JpaRepository<Studio, String> {
     List<Studio> findAllByStatusNot(StudioStatus status);
-
+    Studio findStudioById(String id);
     List<Studio> findAllByStatusNotAndStudioTypeId(StudioStatus status, String studioTypeId);
 
     @Query("""

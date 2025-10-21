@@ -8,6 +8,5 @@ import lombok.Getter;
 public enum StudioStatus {
     AVAILABLE,
     MAINTENANCE,
-    DELETED,
-    OCCUPIED
+    DELETED
 }

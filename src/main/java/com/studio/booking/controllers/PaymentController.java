@@ -1,6 +1,7 @@
 package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
+import com.studio.booking.dtos.request.PaymentRequest;
 import com.studio.booking.dtos.request.PaymentStatusRequest;
 import com.studio.booking.services.PaymentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -75,5 +76,14 @@ public class PaymentController {
         headers.setLocation(URI.create(frontEndUrl + redirectPath));
 
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+    @PostMapping()
+    public ResponseEntity<BaseResponse> create(@RequestBody PaymentRequest req) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Create payment status successfully!")
+                .data(paymentService.createPayment(req,null))
+                .build());
     }
 }

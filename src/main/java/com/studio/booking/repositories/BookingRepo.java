@@ -10,19 +10,20 @@ import java.util.List;
 
 public interface BookingRepo extends JpaRepository<Booking, String> {
     List<Booking> findAllByStatusNot(BookingStatus status);
-    @Query("""
-       select b
-       from Booking b
-       where b.locationId = :locationId
-       """)
-    List<Booking> findAllByLocationId(@Param("locationId") String locationId);
 //    @Query("""
-//           select distinct b
-//           from Booking b
-//           join b.studioAssigns sa
-//           join sa.studio s
-//           join s.location l
-//           where l.id = :locationId
-//           """)
+//       select b
+//       from Booking b
+//       where b.locationId = :locationId
+//       """)
 //    List<Booking> findAllByLocationId(@Param("locationId") String locationId);
+    @Query("""
+           select distinct b
+           from Booking b
+           join b.studioAssigns sa
+           join sa.studio s
+           join s.location l
+           where l.id = :locationId
+           """)
+    List<Booking> findAllByLocationId(@Param("locationId") String locationId);
+    Booking findBookingById(String id);
 }

@@ -1,12 +1,15 @@
 package com.studio.booking.services.impl;
 
 import com.studio.booking.dtos.request.StudioAssignRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.dtos.response.StudioAssignResponse;
+import com.studio.booking.dtos.response.StudioResponse;
 import com.studio.booking.entities.Booking;
 import com.studio.booking.entities.ServiceAssign;
 import com.studio.booking.entities.Studio;
 import com.studio.booking.entities.StudioAssign;
 import com.studio.booking.enums.AssignStatus;
+import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.enums.StudioStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.BookingRepo;
@@ -33,6 +36,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     private final StudioAssignRepo assignRepo;
     private final StudioRepo studioRepo;
     private final BookingRepo bookingRepo;
+    private final StudioAssignRepo studioAssignRepo;
 
     @Override
     public List<StudioAssignResponse> getAll() {
@@ -133,93 +137,43 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     }
 
     @Override
-    @Transactional
-    public StudioAssignResponse attachStudioToExistingAssign(String assignId, String studioId) {
-        StudioAssign assign = assignRepo.findByIdForUpdate(assignId)
-                .orElseThrow(() -> new BookingException("StudioAssign not found with id: " + assignId));
+    public StudioAssignResponse updateStatus(String id, UpdateStatusRequest request) {
+        var studioAssign = studioAssignRepo.findById(id)
+                .orElseThrow(() -> new BookingException("Studio Assign not found with id: " + id));
 
-        String oldStudioId = assign.getStudio().getId();
-
-        Studio studio = studioRepo.findByIdForUpdate(studioId)
-                .orElseThrow(() -> new BookingException("Studio not found with id: " + studioId));
-
-        if (studio.getStatus() != StudioStatus.AVAILABLE) {
-            throw new BookingException("Studio is not AVAILABLE for assignment");
+        if (request.getStatus() == null || request.getStatus().isBlank()) {
+            throw new BookingException("Studio status cannot be null/blank");
         }
-        assign.setStudio(studio);
-        assign.setStatus(AssignStatus.IS_HAPPENING);
-        studio.setStatus(StudioStatus.DELETED); //Ko enum được chỗ này oh shiet nên để tạm qua deleted
 
-        //Cập nhật lại old studio
-        if(!oldStudioId.isEmpty() && !oldStudioId.equals(studioId))
+        AssignStatus newStatus;
+        try {
+            newStatus = AssignStatus.valueOf(request.getStatus().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BookingException("Invalid StudioStatus: " + request.getStatus());
+        }
+
+        studioAssign.setStatus(newStatus);
+        studioAssignRepo.save(studioAssign);
+
+        if (newStatus.equals(AssignStatus.ENDED))
         {
-            Studio oldStudio = studioRepo.findByIdForUpdate(oldStudioId)
-                    .orElseThrow(() -> new BookingException("Old Studio not found with id: " + oldStudioId));
-            oldStudio.setStatus(StudioStatus.AVAILABLE);
+            boolean stillOpen = studioAssignRepo.existsByBooking_IdAndStatusNot(studioAssign.getBooking().getId(), AssignStatus.ENDED);
+            System.out.println(stillOpen);
+            if(!stillOpen)
+            {
+                var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
+                booking.setStatus(BookingStatus.COMPLETED);
+                bookingRepo.save(booking);
+            }
+        }else
+        {
+            var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
+            booking.setStatus(BookingStatus.IN_PROGRESS);
+            bookingRepo.save(booking);
         }
 
-        studioRepo.save(studio);
-        assignRepo.save(assign);
-
-        return toResponse(assign);
+        return toResponse(studioAssign);
     }
-//    @Override
-//    @Transactional
-//    public StudioAssign assignStudio(String studioId, StudioAssignRequest req) {
-//        Studio studio = studioRepo.findByIdForUpdate(studioId)
-//                .orElseThrow(() -> new BookingException("Studio not found with id: " + studioId));
-//
-//        //cho phép khi AVAILABLE
-//        if (studio.getStatus() != StudioStatus.AVAILABLE) {
-//            throw new BookingException("Studio is not AVAILABLE for assigning");
-//        }
-//
-//        Long bufferMinutes = req.getBufferMinutes();
-//        if (bufferMinutes != null && bufferMinutes > 0) {
-//            LocalDateTime startTimeAfterBuffer = req.getStartTime().minusMinutes(bufferMinutes);
-//            if (!startTimeAfterBuffer.toLocalDate().equals(req.getStartTime().toLocalDate())) {
-//                req.setStartTime(req.getStartTime().toLocalDate().atStartOfDay());
-//            }
-//        }
-//
-//        Double studioAmount = priceTableItemService
-//                .getPriceByTypeAndTime(req.getStudioTypeId(), req.getStartTime(), req.getEndTime())
-//                .getTotalPrice();
-//
-//        //Gán service nếu có
-//        List<ServiceAssign> serviceAssigns = new ArrayList<>();
-//        double serviceTotal = 0D;
-//        if (Validation.isValidCollection(req.getServiceIds())) {
-//            serviceAssigns = serviceAssignService.createByList(req.getServiceIds());
-//            serviceTotal = serviceAssigns.stream()
-//                    .mapToDouble(sa -> sa.getService().getServiceFee())
-//                    .sum();
-//        }
-//
-//        StudioAssign assign = StudioAssign.builder()
-//                .studio(studio)
-//                .startTime(req.getStartTime())
-//                .endTime(req.getEndTime())
-//                .studioAmount(studioAmount)
-//                .serviceAmount(serviceTotal)
-//                .additionTime(req.getAdditionTime())
-//                .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
-//                .serviceAssigns(serviceAssigns)
-//                .build();
-//
-//        if (!Validation.isNullOrEmpty(req.getBookingId())) {
-//            Booking booking = bookingRepo.findById(req.getBookingId())
-//                    .orElseThrow(() -> new BookingException("Booking not found with id: " + req.getBookingId()));
-//            assign.setBooking(booking);
-//        }
-//
-//        // (7) Đổi trạng thái studio → OCCUPIED rồi save
-//        studio.setStatus(StudioStatus.OCCUPIED);
-//        studioRepo.save(studio);
-//
-//        // (8) Lưu assign
-//        return assignRepo.save(assign);
-//    }
 
 
     private StudioAssignResponse toResponse(StudioAssign entity) {

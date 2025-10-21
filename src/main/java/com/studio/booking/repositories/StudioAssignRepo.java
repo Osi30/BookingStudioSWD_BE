@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.Collection;
 import java.util.Optional;
 
 import java.util.List;
@@ -18,4 +20,5 @@ public interface StudioAssignRepo extends JpaRepository<StudioAssign, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select sa from StudioAssign sa where sa.id = :id")
     Optional<StudioAssign> findByIdForUpdate(@Param("id") String id);
+    boolean existsByBooking_IdAndStatusNot(String bookingId, AssignStatus status);
 }

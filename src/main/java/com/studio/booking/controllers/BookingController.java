@@ -105,11 +105,8 @@ public class BookingController {
     @GetMapping("/staff/bookings")
     public ResponseEntity<BaseResponse> getForEmployee(
             @RequestParam("accountId") String employeeAccountId
-            // Nếu dùng JWT:
-            // @RequestHeader("Authorization") String token
+
     ) {
-        // Nếu dùng JWT:
-        // String employeeAccountId = jwtService.getIdentifierFromToken(token);
 
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())

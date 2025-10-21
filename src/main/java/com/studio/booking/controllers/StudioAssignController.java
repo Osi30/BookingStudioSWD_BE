@@ -2,6 +2,7 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioAssignRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.services.StudioAssignService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StudioAssignController {
     private final StudioAssignService service;
+    private final StudioAssignService studioAssignService;
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
@@ -72,27 +74,15 @@ public class StudioAssignController {
                 .build());
     }
 
-    @PostMapping("/{assignId}/attach-studio/{studioId}")
-    public ResponseEntity<BaseResponse> attachStudio(@PathVariable String assignId,
-                                                     @PathVariable String studioId) {
-        var res = service.attachStudioToExistingAssign(assignId, studioId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(BaseResponse.builder()
+    @PatchMapping("/status/{id}")
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(
+                BaseResponse.builder()
                         .code(HttpStatus.OK.value())
-                        .message("Attach studio to assignment successfully!")
-                        .data(res)
-                        .build());
+                        .message("Update studio assign status successfully!")
+                        .data(studioAssignService.updateStatus(id, request))
+                        .build()
+        );
     }
-
-//    @PostMapping("/assign/{studioId}")
-//    public ResponseEntity<BaseResponse> assignSpecific(@PathVariable String studioId,
-//                                                       @RequestBody StudioAssignRequest req) {
-//        var assigned = service.assignStudio(studioId, req);
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//                .body(BaseResponse.builder()
-//                        .code(HttpStatus.CREATED.value())
-//                        .message("Assign studio successfully!")
-//                        .data(assigned.getId())
-//                        .build());
-//    }
 }
