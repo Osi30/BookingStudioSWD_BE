@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 public class StudioAssignAdditionTimeResponse {
     private String assignId;
 
-    private LocalDateTime oldEndTime;
-    private LocalDateTime newEndTime;
 
     private long addedMinutes;
     private double addedFee;

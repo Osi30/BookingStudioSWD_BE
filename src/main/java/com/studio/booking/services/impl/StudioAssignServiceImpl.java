@@ -1,5 +1,6 @@
 package com.studio.booking.services.impl;
 
+import com.studio.booking.dtos.request.AdditionalTimePriceRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.request.UpdateAdditionalTimeRequest;
 import com.studio.booking.dtos.request.UpdateStatusRequest;
@@ -15,6 +16,7 @@ import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.enums.StudioStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.BookingRepo;
+import com.studio.booking.repositories.PaymentRepo;
 import com.studio.booking.repositories.StudioAssignRepo;
 import com.studio.booking.repositories.StudioRepo;
 import com.studio.booking.services.PriceTableItemService;
@@ -39,6 +41,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     private final StudioRepo studioRepo;
     private final BookingRepo bookingRepo;
     private final StudioAssignRepo studioAssignRepo;
+    private final PaymentRepo paymentRepo;
 
     @Override
     public List<StudioAssignResponse> getAll() {
@@ -199,11 +202,10 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     @Override
     @Transactional
     public StudioAssignAdditionTimeResponse addAdditionTime(String assignId, UpdateAdditionalTimeRequest req) {
-        if (req.getAdditionMinutes() == null || req.getAdditionMinutes() <= 0) {
-            throw new BookingException("additionMinutes must be > 0");
+        if (req.getAdditionMinutes() == null || req.getAdditionMinutes() < 0) {
+            throw new BookingException("additionMinutes must be >= 0");
         }
 
-        // 1) Lock assign để cập nhật
         StudioAssign assign = assignRepo.findByIdForUpdate(assignId)
                 .orElseThrow(() -> new BookingException("StudioAssign not found with id: " + assignId));
 
@@ -211,7 +213,6 @@ public class StudioAssignServiceImpl implements StudioAssignService {
             throw new BookingException("Assign missing start/end time");
         }
 
-        // 2) Tính thêm phí dựa trên studioType
         String studioTypeId = null;
         if (assign.getStudio() != null && assign.getStudio().getStudioType() != null) {
             studioTypeId = assign.getStudio().getStudioType().getId();
@@ -222,39 +223,67 @@ public class StudioAssignServiceImpl implements StudioAssignService {
             throw new BookingException("Cannot resolve studio type for pricing");
         }
 
+        var start  = assign.getStartTime();
+        System.out.println("Start: " + start);
         var oldEnd = assign.getEndTime();
-        long minutes = req.getAdditionMinutes();
-        double extraFee = priceTableItemService.getAdditionalPrice(studioTypeId, oldEnd, minutes);
+        System.out.println("Old end: " + oldEnd);
+        long oldAddMinutes = assign.getAdditionTime() == null ? 0L : assign.getAdditionTime().longValue();
 
-        // 3) Cập nhật assign
-        assign.setEndTime(oldEnd.plusMinutes(minutes));
-        assign.setAdditionTime((assign.getAdditionTime() == null ? 0D : assign.getAdditionTime()) + minutes);
-        assign.setStudioAmount((assign.getStudioAmount() == null ? 0D : assign.getStudioAmount()) + extraFee);
+        var baseEnd = oldEnd.minusMinutes(oldAddMinutes);
+
+        long newAddMinutes = req.getAdditionMinutes();
+
+        double baseAmount = priceTableItemService
+                .getPriceByTypeAndTime(studioTypeId, start, baseEnd)
+                .getTotalPrice();
+        System.out.println("Base Amount: "+ baseAmount);
+
+        AdditionalTimePriceRequest reqPreview = new AdditionalTimePriceRequest();
+        reqPreview.setStudioTypeId(studioTypeId);
+        reqPreview.setAtTime(baseEnd);
+        reqPreview.setAdditionMinutes(newAddMinutes);
+        var preview = priceTableItemService.previewAdditionalPrice(reqPreview);
+        double extraFee = preview.getExtraFee();
+        double newStudioAmount = baseAmount + extraFee;
+
+        assign.setAdditionTime((double) newAddMinutes);
+        assign.setStudioAmount(newStudioAmount);
         assignRepo.save(assign);
 
-        // 4) Recalc booking.total (nếu assign thuộc booking)
         String bookingId = null;
         Double newBookingTotal = null;
         if (assign.getBooking() != null) {
             bookingId = assign.getBooking().getId();
+
             double total = studioAssignRepo
                     .sumAmountsByBookingIdAndStatusNot(bookingId, AssignStatus.CANCELLED);
+
             var booking = bookingRepo.findById(bookingId)
-                    .orElseThrow(() -> new BookingException("Booking not found with id: " ));//+ bookingId));
+                    .orElseThrow(() -> new BookingException("Booking not found with id: "));
             booking.setTotal(total);
             bookingRepo.save(booking);
             newBookingTotal = total;
+
+            paymentRepo.findTopByBooking_IdOrderByPaymentDateDesc(bookingId)
+                    .ifPresent(p -> {
+                        p.setAmount(booking.getTotal());
+                        paymentRepo.save(p);
+                    });
+
+            newBookingTotal = booking.getTotal();
         }
 
         return StudioAssignAdditionTimeResponse.builder()
                 .assignId(assign.getId())
-                .oldEndTime(oldEnd)
-                .newEndTime(assign.getEndTime())
-                .addedMinutes(minutes)
+                .addedMinutes(newAddMinutes)
                 .addedFee(extraFee)
-                .newStudioAmount(assign.getStudioAmount())
+                .newStudioAmount(newStudioAmount)
                 .bookingId(bookingId)
                 .newBookingTotal(newBookingTotal)
                 .build();
     }
+
+
+
+
 }
