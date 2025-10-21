@@ -73,26 +73,34 @@ public class StudioAssignServiceImpl implements StudioAssignService {
                 .getPriceByTypeAndTime(req.getStudioTypeId(), req.getStartTime(), req.getEndTime())
                 .getTotalPrice();
 
+        // Assign Studio
+        StudioAssign studioAssign = StudioAssign.builder()
+                .studio(availableStudio)
+                .startTime(req.getStartTime())
+                .endTime(req.getEndTime())
+                .studioAmount(studioAmount)
+                .additionTime(req.getAdditionTime())
+                .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
+                .build();
+
         // Services
         List<ServiceAssign> serviceAssigns = new ArrayList<>();
         double serviceTotal = 0D;
         if (Validation.isValidCollection(req.getServiceIds())) {
             serviceAssigns = serviceAssignService.createByList(req.getServiceIds());
+            for (ServiceAssign serviceAssign : serviceAssigns) {
+                serviceAssign.setStudioAssign(studioAssign);
+            }
+
             serviceTotal = serviceAssigns.stream()
                     .mapToDouble(sa -> sa.getService().getServiceFee())
                     .sum();
         }
 
-        return StudioAssign.builder()
-                .studio(availableStudio)
-                .startTime(req.getStartTime())
-                .endTime(req.getEndTime())
-                .studioAmount(studioAmount)
-                .serviceAmount(serviceTotal)
-                .additionTime(req.getAdditionTime())
-                .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
-                .serviceAssigns(serviceAssigns)
-                .build();
+        studioAssign.setServiceAmount(serviceTotal);
+        studioAssign.setServiceAssigns(serviceAssigns);
+
+        return studioAssign;
     }
 
 
@@ -117,6 +125,10 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         // Services
         if (Validation.isValidCollection(req.getServiceIds())) {
             List<ServiceAssign> serviceAssigns = serviceAssignService.createByList(req.getServiceIds());
+            for (ServiceAssign serviceAssign : serviceAssigns) {
+                serviceAssign.setStudioAssign(assign);
+            }
+
             double serviceTotal = serviceAssigns.stream()
                     .mapToDouble(sa -> sa.getService().getServiceFee())
                     .sum();

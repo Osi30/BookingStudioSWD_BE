@@ -51,18 +51,21 @@ public class BookingServiceImpl implements BookingService {
         // Location
         Location location = locationService.getById(bookingRequest.getLocationId());
 
+        Booking booking = mapper.toBooking(bookingRequest);
+        booking.setStatus(BookingStatus.IN_PROGRESS);
+        booking.setStudioType(studioType);
+
         // Studio Assigns
         List<StudioAssign> studioAssigns = new ArrayList<>();
         for (StudioAssignRequest req : bookingRequest.getStudioAssignRequests()) {
             req.setStudioTypeId(studioType.getId());
             req.setLocationId(location.getId());
             req.setBufferMinutes(bufferMinutes);
-            studioAssigns.add(studioAssignService.create(req));
+            StudioAssign studioAssign = studioAssignService.create(req);
+            studioAssign.setBooking(booking);
+            studioAssigns.add(studioAssign);
         }
 
-        Booking booking = mapper.toBooking(bookingRequest);
-        booking.setStatus(BookingStatus.IN_PROGRESS);
-        booking.setStudioType(studioType);
         booking.setStudioAssigns(studioAssigns);
         booking.setTotal(studioAssigns
                 .stream().mapToDouble(sa -> sa.getStudioAmount() + sa.getServiceAmount())
@@ -127,7 +130,9 @@ public class BookingServiceImpl implements BookingService {
                 request.setStudioTypeId(req.getStudioTypeId());
                 request.setLocationId(req.getLocationId());
                 request.setBufferMinutes(booking.getStudioType().getBufferTime().longValue());
-                studioAssigns.add(studioAssignService.create(request));
+                StudioAssign studioAssign = studioAssignService.create(request);
+                studioAssign.setBooking(booking);
+                studioAssigns.add(studioAssign);
             }
 
             Double total = studioAssigns
