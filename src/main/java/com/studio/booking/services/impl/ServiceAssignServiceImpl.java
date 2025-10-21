@@ -114,7 +114,6 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
             throw new BookingException("Cannot update the data within two days before the start time of booking");
         }
 
-
         Double updatedAmount = serviceAssign.getService().getServiceFee();
 
         // Update amount in assign
