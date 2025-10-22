@@ -1,9 +1,12 @@
 
 package com.studio.booking.services.impl;
 import com.studio.booking.dtos.request.ServiceRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.dtos.response.ServiceResponse;
+import com.studio.booking.entities.Service;
 import com.studio.booking.enums.ServiceStatus;
 import com.studio.booking.exceptions.exceptions.AccountException;
+import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.ServiceMapper;
 import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.services.ServiceService;
@@ -54,5 +57,27 @@ public class ServiceServiceImpl implements ServiceService {
         serviceEntity.setStatus(ServiceStatus.DELETED);
         serviceRepo.save(serviceEntity);
         return "Service deleted successfully!";
+    }
+
+    @Override
+    public ServiceResponse updateStatus(String id, UpdateStatusRequest req) {
+        Service service = serviceRepo.findById(id)
+                .orElseThrow(() -> new BookingException("Service not found with id: " + id));
+
+        if (req.getStatus() == null || req.getStatus().isBlank()) {
+            throw new BookingException("Service status cannot be null/blank");
+        }
+
+        ServiceStatus newStatus;
+        try {
+            newStatus = ServiceStatus.valueOf(req.getStatus().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BookingException("Invalid ServiceStatus: " + req.getStatus());
+        }
+
+        service.setStatus(newStatus);
+        serviceRepo.save(service);
+
+        return mapper.toResponse(service);
     }
 }

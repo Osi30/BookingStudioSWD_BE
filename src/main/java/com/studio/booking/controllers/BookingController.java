@@ -23,14 +23,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class BookingController {
     private final BookingService bookingService;
     private final PaymentService paymentService;
     private final JwtService jwtService;
 
-    @PostMapping
+    @PostMapping("/admin/bookings")
     public ResponseEntity<BaseResponse> createBooking(
             @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
@@ -57,7 +57,7 @@ public class BookingController {
                 .build());
     }
 
-    @GetMapping("/profile")
+    @GetMapping("/bookings/profile")
     public ResponseEntity<BaseResponse> getProfileBooking(
             @RequestHeader("Authorization") String token
     ) {
@@ -71,7 +71,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
+    @GetMapping("/admin/bookings")
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -82,7 +82,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{id}")
+    @GetMapping("/admin/bookings/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -93,7 +93,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/status")
+    @PutMapping("/admin/bookings/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
                                                      @RequestBody BookingStatusRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -103,7 +103,7 @@ public class BookingController {
                 .build());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("bookings/{id}")
     public ResponseEntity<BaseResponse> update(
             @PathVariable String id,
             @RequestBody BookingRequest req
@@ -117,12 +117,25 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/cancel")
+    @PostMapping("/admin/bookings/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(@PathVariable String id,
                                                       @RequestParam(required = false) String note) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message(bookingService.cancelBooking(id, note))
+                .build());
+    }
+
+    @GetMapping("/staff/bookings")
+    public ResponseEntity<BaseResponse> getForEmployee(
+            @RequestParam("accountId") String employeeAccountId
+
+    ) {
+
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Get bookings for employee successfully!")
+                .data(bookingService.getForEmployee(employeeAccountId))
                 .build());
     }
 }

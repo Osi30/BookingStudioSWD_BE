@@ -1,16 +1,21 @@
 package com.studio.booking.services.impl;
 
 import com.studio.booking.dtos.request.StudioRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.dtos.response.StudioResponse;
+import com.studio.booking.entities.Account;
 import com.studio.booking.entities.Location;
 import com.studio.booking.entities.Studio;
 import com.studio.booking.entities.StudioType;
+import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.StudioStatus;
+import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.exceptions.exceptions.StudioException;
 import com.studio.booking.mappers.StudioMapper;
 import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.repositories.StudioRepo;
 import com.studio.booking.repositories.StudioTypeRepo;
+import com.studio.booking.services.AccountService;
 import com.studio.booking.services.CloudinaryService;
 import com.studio.booking.services.StudioService;
 import com.studio.booking.utils.Validation;
@@ -26,6 +31,7 @@ public class StudioServiceImpl implements StudioService {
     private final CloudinaryService cloudinaryService;
     private final StudioRepo studioRepo;
     private final LocationRepo locationRepo;
+    private final AccountService accountService;
     private final StudioTypeRepo studioTypeRepo;
     private final StudioMapper mapper;
 
@@ -111,5 +117,41 @@ public class StudioServiceImpl implements StudioService {
         existing.setStatus(StudioStatus.AVAILABLE);
         studioRepo.save(existing);
         return "Studio restored successfully!";
+    }
+
+    @Override
+    public List<StudioResponse> getForStaff(String staffAccountId) {
+        Account staff = accountService.getAccountById(staffAccountId);
+        if (staff.getRole() != AccountRole.STAFF) {
+            throw new BookingException("Only staff can view bookings by location");
+        }
+        if (staff.getLocation() == null) {
+            throw new BookingException("Staff does not have a location assigned");
+        }
+
+        List<Studio> studios = studioRepo.findAllByLocationId(staff.getLocation().getId());
+        return studios.stream().map(mapper::toResponse).toList();
+    }
+
+    @Override
+    public StudioResponse updateStatus(String id, UpdateStatusRequest request) {
+        var studio = studioRepo.findById(id)
+                .orElseThrow(() -> new BookingException("Studio not found with id: " + id));
+
+        if (request.getStatus() == null || request.getStatus().isBlank()) {
+            throw new BookingException("Studio status cannot be null/blank");
+        }
+
+        StudioStatus newStatus;
+        try {
+            newStatus = StudioStatus.valueOf(request.getStatus().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BookingException("Invalid StudioStatus: " + request.getStatus());
+        }
+
+        studio.setStatus(newStatus);
+        studioRepo.save(studio);
+
+        return mapper.toResponse(studio);
     }
 }

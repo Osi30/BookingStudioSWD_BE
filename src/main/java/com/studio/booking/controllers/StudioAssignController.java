@@ -2,6 +2,8 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioAssignRequest;
+import com.studio.booking.dtos.request.UpdateAdditionalTimeRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.services.StudioAssignService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +17,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StudioAssignController {
     private final StudioAssignService service;
+    private final StudioAssignService studioAssignService;
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
@@ -70,5 +73,30 @@ public class StudioAssignController {
                 .code(HttpStatus.OK.value())
                 .message(service.delete(id))
                 .build());
+    }
+
+    @PatchMapping("/status/{id}")
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Update studio assign status successfully!")
+                        .data(studioAssignService.updateStatus(id, request))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/{assignId}/addition-time")
+    public ResponseEntity<BaseResponse> addAdditionTime(@PathVariable String assignId,
+                                                        @RequestBody UpdateAdditionalTimeRequest req) {
+        var data = service.addAdditionTime(assignId, req);
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Add addition time successfully!")
+                        .data(data)
+                        .build()
+        );
     }
 }

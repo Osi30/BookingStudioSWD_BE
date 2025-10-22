@@ -1,6 +1,7 @@
 package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
+import com.studio.booking.dtos.request.AdditionalTimePriceRequest;
 import com.studio.booking.dtos.request.PriceTableItemRequest;
 import com.studio.booking.dtos.response.PriceResultResponse;
 import com.studio.booking.services.PriceTableItemService;
@@ -75,5 +76,17 @@ public class PriceTableItemController {
                 .code(HttpStatus.OK.value())
                 .message(itemService.delete(id))
                 .build());
+    }
+
+    @PostMapping("/prices/additional/preview")
+    public ResponseEntity<BaseResponse> previewAdditional(@RequestBody AdditionalTimePriceRequest req) {
+        var data = itemService.previewAdditionalPrice(req);
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Preview additional time price successfully!")
+                        .data(data)
+                        .build()
+        );
     }
 }
