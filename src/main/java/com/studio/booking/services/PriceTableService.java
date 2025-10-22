@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface PriceTableService {
     List<PriceTableResponse> getAll();
+    List<PriceTableResponse> getByTypeId(String typeId);
     PriceTableResponse getById(String id);
     PriceTableResponse create(PriceTableRequest req);
     PriceTableResponse update(String id, PriceTableRequest req);

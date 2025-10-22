@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.studio.booking.exceptions.exceptions.AccountException;
 
+import java.time.DayOfWeek;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -24,6 +26,14 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     @Override
     public List<PriceRuleResponse> getByItemId(String priceTableItemId) {
         return ruleRepo.findAllByPriceTableItem_IdAndIsDeletedFalse(priceTableItemId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<PriceRuleResponse> getByTableAndType(String tableId, String typeId) {
+        return ruleRepo.findAllByTableAndStudioType(tableId, typeId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -87,7 +97,10 @@ public class PriceRuleServiceImpl implements PriceRuleService {
         return PriceRuleResponse.builder()
                 .id(rule.getId())
                 .priceTableItemId(rule.getPriceTableItem() != null ? rule.getPriceTableItem().getId() : null)
-                .dayFilter(rule.getDayFilter())
+                .dayFilter(Arrays.stream(DayOfWeek.values())
+                        .filter(dow -> rule.getDayFilter() != null
+                                && (rule.getDayFilter() & BitUtil.calculateDayBit(dow)) > 0)
+                        .toList())
                 .startTime(rule.getStartTime())
                 .endTime(rule.getEndTime())
                 .pricePerUnit(rule.getPricePerUnit())

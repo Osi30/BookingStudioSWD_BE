@@ -2,9 +2,13 @@ package com.studio.booking.services.impl;
 
 import com.studio.booking.dtos.request.ServiceAssignRequest;
 import com.studio.booking.dtos.response.ServiceAssignResponse;
+import com.studio.booking.entities.Booking;
 import com.studio.booking.entities.Service;
 import com.studio.booking.entities.ServiceAssign;
 import com.studio.booking.entities.StudioAssign;
+import com.studio.booking.enums.AssignStatus;
+import com.studio.booking.enums.BookingType;
+import com.studio.booking.enums.ServiceAssignStatus;
 import com.studio.booking.enums.ServiceStatus;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.ServiceAssignRepo;
@@ -14,6 +18,8 @@ import com.studio.booking.services.ServiceAssignService;
 import lombok.RequiredArgsConstructor;
 import com.studio.booking.exceptions.exceptions.ServiceException;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +61,7 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
 
         return ServiceAssign.builder()
                 .service(service)
-                .isActive(req.getIsActive() != null ? req.getIsActive() : true)
+                .status(ServiceAssignStatus.ACTIVE)
                 .build();
     }
 
@@ -71,7 +77,7 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
         for (Service service : services) {
             serviceAssigns.add(ServiceAssign.builder()
                     .service(service)
-                    .isActive(true)
+                    .status(ServiceAssignStatus.ACTIVE)
                     .build());
         }
 
@@ -83,9 +89,6 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
         ServiceAssign serviceAssign = serviceAssignRepo.findById(id)
                 .orElseThrow(() -> new ServiceException("ServiceAssign not found with id: " + id));
 
-        if (req.getIsActive() != null) {
-            serviceAssign.setIsActive(req.getIsActive());
-        }
         if (req.getServiceId() != null) {
             Service service = serviceRepo.findById(req.getServiceId())
                     .orElseThrow(() -> new ServiceException("Service not found with id: " + req.getServiceId()));
@@ -105,7 +108,25 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
     public String delete(String id) {
         ServiceAssign serviceAssign = serviceAssignRepo.findById(id)
                 .orElseThrow(() -> new ServiceException("ServiceAssign not found with id: " + id));
-        serviceAssign.setIsActive(false);
+
+        long dayBetween = ChronoUnit.DAYS.between(LocalDate.now(), serviceAssign.getStudioAssign().getStartTime());
+        if (dayBetween <= 2) {
+            throw new BookingException("Cannot update the data within two days before the start time of booking");
+        }
+
+        Double updatedAmount = serviceAssign.getService().getServiceFee();
+
+        // Update amount in assign
+        StudioAssign assign = serviceAssign.getStudioAssign();
+        assign.setServiceAmount(assign.getServiceAmount() - updatedAmount);
+
+        // Update amount in booking
+        Booking booking = assign.getBooking();
+        booking.setTotal(booking.getTotal() - updatedAmount);
+
+        serviceAssign.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
+                ? ServiceAssignStatus.AWAITING_REFUND : ServiceAssignStatus.CANCELLED);
+
         serviceAssignRepo.save(serviceAssign);
         return "ServiceAssign marked as inactive successfully!";
     }
@@ -117,7 +138,7 @@ public class ServiceAssignServiceImpl implements ServiceAssignService {
                 .serviceId(sa.getService() != null ? sa.getService().getId() : null)
                 .serviceName(sa.getService() != null ? sa.getService().getServiceName() : null)
                 .serviceFee(sa.getService() != null ? sa.getService().getServiceFee() : null)
-                .isActive(sa.getIsActive())
+                .status(sa.getStatus())
                 .build();
     }
 }

@@ -10,6 +10,7 @@ public class BitUtil {
         return calculateDayBit(date.getDayOfWeek());
     }
 
+    /// Return bit for specific day
     public static int calculateDayBit(DayOfWeek dayOfWeek) {
         // Monday: 1, Tuesday: 2
         int bitIndex = dayOfWeek.getValue() - 1;

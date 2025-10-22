@@ -16,6 +16,7 @@ public class StudioTypeMapperImpl implements StudioTypeMapper {
                 .description(req.getDescription())
                 .minArea(req.getMinArea())
                 .maxArea(req.getMaxArea())
+                .bufferTime(req.getBufferTime())
                 .isDeleted(false)
                 .build();
     }

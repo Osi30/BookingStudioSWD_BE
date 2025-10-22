@@ -10,8 +10,10 @@ import java.util.List;
 public interface BookingService {
     Booking createBooking(String accountId, BookingRequest bookingRequest);
     List<BookingResponse> getAll();
+    List<BookingResponse> getBookingsByAccount(String accountId);
     BookingResponse getById(String id);
     BookingResponse updateStatus(String id, BookingStatusRequest req);
+    BookingResponse updateBooking(String id, BookingRequest req);
     String cancelBooking(String id, String note);
 
     List<BookingResponse> getForEmployee(String employeeAccountId);

@@ -34,6 +34,15 @@ public class PriceTableController {
                 .build());
     }
 
+    @GetMapping("/studio-types/{id}")
+    public ResponseEntity<BaseResponse> getByStudioType(@PathVariable String id) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Get price table successfully!")
+                .data(priceTableService.getByTypeId(id))
+                .build());
+    }
+
 //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping

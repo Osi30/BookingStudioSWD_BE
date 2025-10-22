@@ -26,4 +26,7 @@ public class BookingResponse {
     private String accountEmail;
     private String accountName;
     private String studioTypeName;
+
+    // Updated Info
+    private Double updatedAmount;
 }

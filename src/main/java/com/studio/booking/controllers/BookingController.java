@@ -32,11 +32,11 @@ public class BookingController {
 
     @PostMapping("/admin/bookings")
     public ResponseEntity<BaseResponse> createBooking(
-//            @RequestHeader("Authorization") String token,
+            @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
     ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
-//        String accountId = jwtService.getIdentifierFromToken(token);
-        Booking booking = bookingService.createBooking("ZDGEIAQRNG", bookingRequest);
+        String accountId = jwtService.getIdentifierFromToken(token);
+        Booking booking = bookingService.createBooking(accountId, bookingRequest);
 
         // Payment
         Payment payment = paymentService.createPayment(PaymentRequest.builder()
@@ -57,7 +57,19 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    @GetMapping("/bookings/profile")
+    public ResponseEntity<BaseResponse> getProfileBooking(
+            @RequestHeader("Authorization") String token
+    ) {
+        String accountId = jwtService.getIdentifierFromToken(token);
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Get all bookings successfully!")
+                .data(bookingService.getBookingsByAccount(accountId))
+                .build());
+    }
+
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/bookings")
     public ResponseEntity<BaseResponse> getAll() {
@@ -68,7 +80,7 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/bookings/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
@@ -79,7 +91,7 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/bookings/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
@@ -91,7 +103,19 @@ public class BookingController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    @PutMapping("bookings/{id}")
+    public ResponseEntity<BaseResponse> update(
+            @PathVariable String id,
+            @RequestBody BookingRequest req
+    ) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Update booking successfully!")
+                .data(bookingService.updateBooking(id, req))
+                .build());
+    }
+
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/bookings/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(@PathVariable String id,
