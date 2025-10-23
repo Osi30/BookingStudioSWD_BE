@@ -3,12 +3,14 @@ package com.studio.booking.services.impl;
 import com.studio.booking.dtos.request.AccountRequest;
 import com.studio.booking.dtos.response.AccountResponse;
 import com.studio.booking.entities.Account;
+import com.studio.booking.entities.Location;
 import com.studio.booking.enums.AccountRole;
 import com.studio.booking.enums.AccountStatus;
 import com.studio.booking.enums.UserType;
 import com.studio.booking.exceptions.exceptions.AccountException;
 import com.studio.booking.mappers.AccountMapper;
 import com.studio.booking.repositories.AccountRepo;
+import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.services.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
     private final AccountRepo accountRepo;
+    private final LocationRepo locationRepo;
     private final AccountMapper accountMapper;
 
     @Override
@@ -50,6 +53,21 @@ public class AccountServiceImpl implements AccountService {
         Account existingAccount = getAccountById(accountId);
         existingAccount = accountMapper.updateAccount(request, existingAccount);
         return accountMapper.toAccountResponse(accountRepo.save(existingAccount));
+    }
+
+    @Override
+    public AccountResponse createAccount(AccountRequest req) {
+        Account existingAccount = getAccountByEmail(req.getEmail());
+        if (existingAccount != null) {
+            throw new AccountException("Account already exists with email: " + req.getEmail());
+        }
+
+        Account account = accountMapper.toAccount(req);
+        Location location = locationRepo.findById(req.getLocationId())
+                .orElseThrow(() -> new AccountException("Location not found with id: " + req.getLocationId()));
+        account.setLocation(location);
+
+        return accountMapper.toAccountResponse(accountRepo.save(account));
     }
 
     @Override

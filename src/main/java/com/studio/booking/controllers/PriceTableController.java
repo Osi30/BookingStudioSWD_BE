@@ -43,7 +43,7 @@ public class PriceTableController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody PriceTableRequest req) {
@@ -54,11 +54,13 @@ public class PriceTableController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse> update(@PathVariable String id,
-                                               @RequestBody PriceTableRequest req) {
+    public ResponseEntity<BaseResponse> update(
+            @PathVariable String id,
+            @RequestBody PriceTableRequest req
+    ) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update price table successfully!")
@@ -66,7 +68,7 @@ public class PriceTableController {
                 .build());
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
+    //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
