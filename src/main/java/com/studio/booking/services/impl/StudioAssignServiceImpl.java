@@ -75,21 +75,22 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     @Override
     public StudioAssign create(StudioAssignRequest req) {
         // Validate
-        validationTime(req.getStartTime(), req.getEndTime());
+        validationTime(req.getStartTime(), req.getHour());
+        LocalDateTime endTime = req.getStartTime().plusHours(req.getHour());
 
         // Find currently available studio
         Studio availableStudio = getAvailableStudioByTime(req.getLocationId(), req.getStudioTypeId(), req);
 
         // Price of Studio
         Double studioAmount = priceTableItemService
-                .getPriceByTypeAndTime(req.getStudioTypeId(), req.getStartTime(), req.getEndTime())
+                .getPriceByTypeAndTime(req.getStudioTypeId(), req.getStartTime(), endTime)
                 .getTotalPrice();
 
         // Assign Studio
         StudioAssign studioAssign = StudioAssign.builder()
                 .studio(availableStudio)
                 .startTime(req.getStartTime())
-                .endTime(req.getEndTime())
+                .endTime(endTime)
                 .studioAmount(studioAmount)
                 .additionTime(req.getAdditionTime())
                 .status(req.getStatus() != null ? req.getStatus() : AssignStatus.COMING_SOON)
@@ -128,7 +129,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         double updatedAmount = 0D;
 
         // Start Time and End Time
-        if (req.getStartTime() != null && req.getEndTime() != null) {
+        if (req.getStartTime() != null && req.getHour() != null && req.getHour() > 0) {
             Double currentStudioAmount = assign.getStudioAmount();
             updateTimeInterval(assign, req);
             updatedAmount = assign.getStudioAmount() - currentStudioAmount;
@@ -202,18 +203,15 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         studioAssign.setStatus(newStatus);
         studioAssignRepo.save(studioAssign);
 
-        if (newStatus.equals(AssignStatus.ENDED))
-        {
+        if (newStatus.equals(AssignStatus.ENDED)) {
             boolean stillOpen = studioAssignRepo.existsByBooking_IdAndStatusNot(studioAssign.getBooking().getId(), AssignStatus.ENDED);
             System.out.println(stillOpen);
-            if(!stillOpen)
-            {
+            if (!stillOpen) {
                 var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
                 booking.setStatus(BookingStatus.COMPLETED);
                 bookingRepo.save(booking);
             }
-        }else
-        {
+        } else {
             var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
             booking.setStatus(BookingStatus.IN_PROGRESS);
             bookingRepo.save(booking);
@@ -223,8 +221,9 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     }
 
     private void updateTimeInterval(StudioAssign assign, StudioAssignRequest req) {
-        validationTime(assign.getStartTime(), assign.getEndTime());
+        validationTime(req.getStartTime(), req.getHour());
 
+        LocalDateTime endTime = req.getStartTime().plusHours(req.getHour());
         String studioTypeId = assign.getStudio().getStudioType().getId();
         String locationId = assign.getStudio().getLocation().getId();
 
@@ -234,11 +233,11 @@ public class StudioAssignServiceImpl implements StudioAssignService {
                 req);
 
         Double studioAmount = priceTableItemService
-                .getPriceByTypeAndTime(studioTypeId, req.getStartTime(), req.getEndTime())
+                .getPriceByTypeAndTime(studioTypeId, req.getStartTime(), endTime)
                 .getTotalPrice();
 
         assign.setStartTime(req.getStartTime());
-        assign.setEndTime(req.getEndTime());
+        assign.setEndTime(endTime);
         assign.setStudioAmount(studioAmount);
         assign.setStudio(availableStudio);
     }
@@ -246,11 +245,12 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     private Studio getAvailableStudioByTime(String locationId, String typeId, StudioAssignRequest req) {
         // Minus Buffer minutes
         LocalDateTime bufferStartTime = updateStartTimeWithBuffer(req.getBufferMinutes(), req.getStartTime());
+        LocalDateTime endTime = req.getStartTime().plusHours(req.getHour());
 
         // Find currently occupied studios
         Set<String> occupiedStudios = studioRepo.findOccupiedStudioIds(
                 locationId, typeId,
-                bufferStartTime, req.getEndTime()
+                bufferStartTime, endTime
         );
 
         // Find currently available studios (N - No)
@@ -258,15 +258,15 @@ public class StudioAssignServiceImpl implements StudioAssignService {
 
         if (availableStudio.isEmpty()) {
             throw new BookingException("No studio found for the time interval: " +
-                    req.getStartTime() + " - " + req.getEndTime());
+                    req.getStartTime() + " - " + endTime);
         }
 
         return availableStudio.getFirst();
     }
 
-    private void validationTime(LocalDateTime startTime, LocalDateTime endTime) {
-        if (!startTime.isBefore(endTime)) {
-            throw new BookingException("Start time cannot be after end time");
+    private void validationTime(LocalDateTime startTime, Integer hour) {
+        if (hour == null || hour <= 0) {
+            throw new BookingException("Hour must be greater than 0");
         }
 
         validationRequestTime(2, startTime);

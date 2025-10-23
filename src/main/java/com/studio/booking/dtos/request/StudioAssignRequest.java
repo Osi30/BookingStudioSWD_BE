@@ -22,8 +22,7 @@ public class StudioAssignRequest {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime startTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    private LocalDateTime endTime;
+    private Integer hour;
 
     private Double studioAmount;
     private Double serviceAmount;
