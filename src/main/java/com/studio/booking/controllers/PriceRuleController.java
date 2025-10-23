@@ -51,8 +51,10 @@ public class PriceRuleController {
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse> update(@PathVariable String id,
-                                               @RequestBody PriceRuleRequest req) {
+    public ResponseEntity<BaseResponse> update(
+            @PathVariable String id,
+            @RequestBody PriceRuleRequest req
+    ) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update rule successfully!")
