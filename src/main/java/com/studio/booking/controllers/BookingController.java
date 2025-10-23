@@ -30,7 +30,7 @@ public class BookingController {
     private final PaymentService paymentService;
     private final JwtService jwtService;
 
-    @PostMapping("/admin/bookings")
+    @PostMapping("/bookings")
     public ResponseEntity<BaseResponse> createBooking(
             @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
@@ -71,7 +71,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/bookings")
+    @GetMapping("/bookings")
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -82,7 +82,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/bookings/{id}")
+    @GetMapping("/bookings/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
@@ -93,7 +93,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/bookings/{id}/status")
+    @PutMapping("/bookings/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(
             @PathVariable String id,
             @RequestBody BookingStatusRequest req
@@ -119,7 +119,7 @@ public class BookingController {
 
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/bookings/{id}/cancel")
+    @PostMapping("/bookings/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(
             @PathVariable String id,
             @RequestParam(required = false) String note
