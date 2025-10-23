@@ -5,7 +5,11 @@ import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.*;
+
+import com.studio.booking.enums.AccountRole;
+
 import com.studio.booking.enums.AssignStatus;
+
 import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.enums.BookingType;
 import com.studio.booking.exceptions.exceptions.BookingException;
@@ -51,18 +55,21 @@ public class BookingServiceImpl implements BookingService {
         // Location
         Location location = locationService.getById(bookingRequest.getLocationId());
 
+        Booking booking = mapper.toBooking(bookingRequest);
+        booking.setStatus(BookingStatus.IN_PROGRESS);
+        booking.setStudioType(studioType);
+
         // Studio Assigns
         List<StudioAssign> studioAssigns = new ArrayList<>();
         for (StudioAssignRequest req : bookingRequest.getStudioAssignRequests()) {
             req.setStudioTypeId(studioType.getId());
             req.setLocationId(location.getId());
             req.setBufferMinutes(bufferMinutes);
-            studioAssigns.add(studioAssignService.create(req));
+            StudioAssign studioAssign = studioAssignService.create(req);
+            studioAssign.setBooking(booking);
+            studioAssigns.add(studioAssign);
         }
 
-        Booking booking = mapper.toBooking(bookingRequest);
-        booking.setStatus(BookingStatus.IN_PROGRESS);
-        booking.setStudioType(studioType);
         booking.setStudioAssigns(studioAssigns);
         booking.setTotal(studioAssigns
                 .stream().mapToDouble(sa -> sa.getStudioAmount() + sa.getServiceAmount())
@@ -127,7 +134,9 @@ public class BookingServiceImpl implements BookingService {
                 request.setStudioTypeId(req.getStudioTypeId());
                 request.setLocationId(req.getLocationId());
                 request.setBufferMinutes(booking.getStudioType().getBufferTime().longValue());
-                studioAssigns.add(studioAssignService.create(request));
+                StudioAssign studioAssign = studioAssignService.create(request);
+                studioAssign.setBooking(booking);
+                studioAssigns.add(studioAssign);
             }
 
             Double total = studioAssigns
@@ -167,8 +176,27 @@ public class BookingServiceImpl implements BookingService {
         return "Booking cancelled successfully!";
     }
 
+
+    @Override
+    public List<BookingResponse> getForEmployee(String employeeAccountId) {
+        Account employee = accountService.getAccountById(employeeAccountId);
+        if (employee.getRole() != AccountRole.STAFF) {
+            throw new BookingException("Only staff can view bookings by location");
+        }
+        if (employee.getLocation() == null) {
+            throw new BookingException("Staff does not have a location assigned");
+        }
+
+        String locationId = employee.getLocation().getId();
+        return bookingRepo.findAllByLocationId(locationId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
     private Booking getBookingById(String id) {
         return bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
+
     }
 }

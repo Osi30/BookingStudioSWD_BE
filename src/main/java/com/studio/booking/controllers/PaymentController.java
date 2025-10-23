@@ -1,7 +1,10 @@
 package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
+import com.studio.booking.dtos.request.PaymentRequest;
 import com.studio.booking.dtos.request.PaymentStatusRequest;
+import com.studio.booking.dtos.response.FinalPaymentRequest;
+import com.studio.booking.enums.PaymentStatus;
 import com.studio.booking.services.PaymentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +78,62 @@ public class PaymentController {
         headers.setLocation(URI.create(frontEndUrl + redirectPath));
 
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+    @PostMapping()
+    public ResponseEntity<BaseResponse> create(@RequestBody PaymentRequest req) {
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Create payment status successfully!")
+                .data(paymentService.createPayment(req,null))
+                .build());
+    }
+
+    @PutMapping("staff/cash/{id}/")
+    public ResponseEntity<BaseResponse> updateStatusStaff(@PathVariable String id) {
+        PaymentStatusRequest req = new PaymentStatusRequest();
+        req.setStatus(PaymentStatus.SUCCESS);
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Update payment status successfully!")
+                .data(paymentService.updateStatus(id, req))
+                .build());
+    }
+
+    @GetMapping("staff/booking/{bookingId}")
+    public ResponseEntity<BaseResponse> getByBookingId(@PathVariable String bookingId) {
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Get payments by booking successfully!")
+                        .data(paymentService.getByBookingId(bookingId))
+                        .build()
+        );
+    }
+
+    //xem coi payment có done hết chưa
+    @GetMapping("/booking/{bookingId}/status")
+    public ResponseEntity<BaseResponse> getCompletionStatus(@PathVariable String bookingId) {
+        var data = paymentService.getCompletionStatus(bookingId);
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Get payment completion status successfully!")
+                        .data(data)
+                        .build()
+        );
+    }
+
+    @PostMapping("/booking/{bookingId}/final")
+    public ResponseEntity<BaseResponse> createFinalPayment(@PathVariable String bookingId,
+                                                           @RequestBody FinalPaymentRequest req) {
+        var res = paymentService.createFinalPayment(bookingId, req.getPaymentMethod());
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Create FINAL_PAYMENT successfully!")
+                        .data(res)
+                        .build()
+        );
     }
 }

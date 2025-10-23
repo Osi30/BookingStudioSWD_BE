@@ -1,7 +1,9 @@
 package com.studio.booking.services.impl;
 
 import com.studio.booking.dtos.dto.PriceResultDTO;
+import com.studio.booking.dtos.request.AdditionalTimePriceRequest;
 import com.studio.booking.dtos.request.PriceTableItemRequest;
+import com.studio.booking.dtos.response.AdditionalTimePriceResponse;
 import com.studio.booking.dtos.response.PriceResultResponse;
 import com.studio.booking.dtos.response.PriceTableItemResponse;
 import com.studio.booking.entities.PriceRule;
@@ -237,4 +239,87 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
                 .defaultPrice(item.getDefaultPrice())
                 .build();
     }
+
+    @Override
+    public Double getAdditionalPrice(String studioTypeId, LocalDateTime atTime, long additionMinutes) {
+        if (additionMinutes <= 0) return 0D;
+
+        // tìm PriceTableItem hợp lệ theo studioType + ngày
+        List<PriceTableItem> priceItems = itemRepo.findFirstByStudioTypeAndDate(
+                studioTypeId, atTime.toLocalDate()
+        );
+        if (!Validation.isValidCollection(priceItems)) {
+            throw new PriceTableException("There are no price items for this studio type");
+        }
+        PriceTableItem priceItem = priceItems.getFirst();
+
+        // xác định rule đang áp dụng tại thời điểm atTime
+        int dayBit = BitUtil.calculateDateBit(atTime.toLocalDate());
+        List<PriceRule> allRules = priceItem.getRules();
+
+        // lọc các rule có thể áp dụng theo ngày/giờ (giống getPriceByTypeAndTime)
+        List<PriceRule> applicableRules = allRules.stream()
+                .filter(r -> {
+                    if (Boolean.TRUE.equals(r.getIsDeleted())) return false;
+
+                    // Rule theo khoảng giờ trong ngày
+                    if (r.getStartTime() != null && r.getEndTime() != null) {
+                        // kiểm tra overlap với "khoảng 1 giờ bắt đầu tại atTime"
+                        LocalTime begin = atTime.toLocalTime();
+                        LocalTime end = begin.plusHours(1);
+                        return r.getStartTime().isBefore(end) && r.getEndTime().isAfter(begin);
+                    }
+
+                    // Rule đặc biệt theo ngày cụ thể
+                    if (r.getDate() != null) {
+                        return r.getDate().equals(atTime.toLocalDate());
+                    }
+
+                    // Rule theo thứ (dayOfWeek)
+                    return isDayRuleApplicable(r, dayBit);
+                })
+                .toList();
+
+        // Chọn rule phù hợp nhất giống thứ tự ưu tiên trong getRuleForTimeInterval
+        LocalTime begin = atTime.toLocalTime();
+        LocalTime end = begin.plusHours(1);
+        PriceRule rule = getRuleForTimeInterval(applicableRules, begin, end);
+
+        // Nếu không có rule → dùng defaultPrice
+        double hourlyPrice = (rule != null && rule.getPricePerUnit() != null)
+                ? rule.getPricePerUnit()
+                : (priceItem.getDefaultPrice() != null ? priceItem.getDefaultPrice() : 0D);
+
+        // công thức: (phút / 60) * đơn giá/giờ
+        return (additionMinutes / 60.0) * hourlyPrice;
+    }
+
+    @Override
+    public AdditionalTimePriceResponse previewAdditionalPrice(AdditionalTimePriceRequest req) {
+        if (req.getAdditionMinutes() <= 0) {
+            return AdditionalTimePriceResponse.builder()
+                    .hourlyPrice(0D)
+                    .additionMinutes(req.getAdditionMinutes())
+                    .extraFee(0D)
+                    .formula("extraFee = (minutes/60) * hourlyPrice")
+                    .build();
+        }
+
+        // Lấy hourlyPrice theo rule tại atTime
+        // Tái sử dụng đúng code đã thêm ở lần trước (getAdditionalPrice)
+        double extraFee = getAdditionalPrice(req.getStudioTypeId(), req.getAtTime(), req.getAdditionMinutes());
+
+        // Để trả hourlyPrice: tính ngược = extraFee / (minutes/60)
+        double hourlyPrice = req.getAdditionMinutes() == 0
+                ? 0D
+                : extraFee / (req.getAdditionMinutes() / 60.0);
+
+        return AdditionalTimePriceResponse.builder()
+                .hourlyPrice(hourlyPrice)
+                .additionMinutes(req.getAdditionMinutes())
+                .extraFee(extraFee)
+                .formula("extraFee = (minutes/60) * hourlyPrice")
+                .build();
+    }
+
 }

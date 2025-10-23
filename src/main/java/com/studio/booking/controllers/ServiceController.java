@@ -2,6 +2,7 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.ServiceRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.services.ServiceService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -65,5 +66,17 @@ public class ServiceController {
                 .code(HttpStatus.OK.value())
                 .message(serviceService.delete(id))
                 .build());
+    }
+
+    @PatchMapping("/status/{id}")
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Update service status successfully!")
+                        .data(serviceService.updateStatus(id, request))
+                        .build()
+        );
     }
 }

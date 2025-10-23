@@ -1,6 +1,8 @@
 package com.studio.booking.services;
 
+import com.studio.booking.dtos.request.AdditionalTimePriceRequest;
 import com.studio.booking.dtos.request.PriceTableItemRequest;
+import com.studio.booking.dtos.response.AdditionalTimePriceResponse;
 import com.studio.booking.dtos.response.PriceResultResponse;
 import com.studio.booking.dtos.response.PriceTableItemResponse;
 
@@ -13,4 +15,6 @@ public interface PriceTableItemService {
     PriceTableItemResponse update(String id, PriceTableItemRequest req);
     String delete(String id);
     PriceResultResponse getPriceByTypeAndTime(String studioTypeId, LocalDateTime startTime, LocalDateTime endTime);
+    Double getAdditionalPrice(String studioTypeId, LocalDateTime atTime, long additionMinutes);
+    AdditionalTimePriceResponse previewAdditionalPrice(AdditionalTimePriceRequest req);
 }

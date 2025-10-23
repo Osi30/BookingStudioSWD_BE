@@ -2,6 +2,7 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioRequest;
+import com.studio.booking.dtos.request.UpdateStatusRequest;
 import com.studio.booking.services.CloudinaryService;
 import com.studio.booking.services.StudioService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -86,5 +87,28 @@ public class StudioController {
                 .code(HttpStatus.OK.value())
                 .message(studioService.restore(id))
                 .build());
+    }
+
+    @GetMapping("/staff")
+    public ResponseEntity<BaseResponse> getForStaff(@RequestParam("accountId") String staffAccountId) {
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Get studios for staff successfully!")
+                        .data(studioService.getForStaff(staffAccountId))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/status/{id}")
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(
+                BaseResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Update studio status successfully!")
+                        .data(studioService.updateStatus(id, request))
+                        .build()
+        );
     }
 }
