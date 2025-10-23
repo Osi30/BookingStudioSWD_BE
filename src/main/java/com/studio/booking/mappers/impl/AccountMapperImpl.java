@@ -3,6 +3,7 @@ package com.studio.booking.mappers.impl;
 import com.studio.booking.dtos.request.AccountRequest;
 import com.studio.booking.dtos.response.AccountResponse;
 import com.studio.booking.entities.Account;
+import com.studio.booking.enums.AccountStatus;
 import com.studio.booking.mappers.AccountMapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -14,6 +15,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AccountMapperImpl implements AccountMapper {
     private final ModelMapper modelMapper;
+
+    @Override
+    public Account toAccount(AccountRequest req) {
+        Account account = modelMapper.map(req, Account.class);
+        account.setStatus(req.getStatus() == null ? AccountStatus.ACTIVE : req.getStatus());
+        return account;
+    }
 
     @Override
     public Account updateAccount(AccountRequest request, Account existedAccount) {
