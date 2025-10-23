@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class ServiceAssignController {
     private final ServiceAssignService service;
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
@@ -55,10 +55,8 @@ public class ServiceAssignController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse> update(
-            @PathVariable String id,
-            @RequestBody ServiceAssignRequest req
-    ) {
+    public ResponseEntity<BaseResponse> update(@PathVariable String id,
+                                               @RequestBody ServiceAssignRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update service assignment successfully!")

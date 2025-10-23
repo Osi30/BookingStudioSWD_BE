@@ -27,7 +27,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
@@ -38,7 +38,7 @@ public class PaymentController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
@@ -49,13 +49,11 @@ public class PaymentController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/status")
-    public ResponseEntity<BaseResponse> updateStatus(
-            @PathVariable String id,
-            @RequestBody PaymentStatusRequest req
-    ) {
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody PaymentStatusRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update payment status successfully!")
@@ -87,7 +85,7 @@ public class PaymentController {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Create payment status successfully!")
-                .data(paymentService.createPayment(req, null))
+                .data(paymentService.createPayment(req,null))
                 .build());
     }
 

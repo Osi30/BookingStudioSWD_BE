@@ -45,7 +45,7 @@ public class PriceTableItemController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody PriceTableItemRequest req) {
@@ -56,13 +56,11 @@ public class PriceTableItemController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse> update(
-            @PathVariable String id,
-            @RequestBody PriceTableItemRequest req
-    ) {
+    public ResponseEntity<BaseResponse> update(@PathVariable String id,
+                                               @RequestBody PriceTableItemRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update item successfully!")
@@ -70,7 +68,7 @@ public class PriceTableItemController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
+//    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
@@ -81,9 +79,7 @@ public class PriceTableItemController {
     }
 
     @PostMapping("/prices/additional/preview")
-    public ResponseEntity<BaseResponse> previewAdditional(
-            @RequestBody AdditionalTimePriceRequest req
-    ) {
+    public ResponseEntity<BaseResponse> previewAdditional(@RequestBody AdditionalTimePriceRequest req) {
         var data = itemService.previewAdditionalPrice(req);
         return ResponseEntity.ok(
                 BaseResponse.builder()

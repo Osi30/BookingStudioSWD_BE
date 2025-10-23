@@ -58,10 +58,8 @@ public class StudioAssignController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse> update(
-            @PathVariable String id,
-            @RequestBody StudioAssignRequest req
-    ) {
+    public ResponseEntity<BaseResponse> update(@PathVariable String id,
+                                               @RequestBody StudioAssignRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update studio assignment successfully!")
@@ -78,10 +76,8 @@ public class StudioAssignController {
     }
 
     @PatchMapping("/status/{id}")
-    public ResponseEntity<BaseResponse> updateStatus(
-            @PathVariable String id,
-            @RequestBody UpdateStatusRequest request
-    ) {
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody UpdateStatusRequest request) {
         return ResponseEntity.ok(
                 BaseResponse.builder()
                         .code(HttpStatus.OK.value())
@@ -92,10 +88,8 @@ public class StudioAssignController {
     }
 
     @PatchMapping("/{assignId}/addition-time")
-    public ResponseEntity<BaseResponse> addAdditionTime(
-            @PathVariable String assignId,
-            @RequestBody UpdateAdditionalTimeRequest req
-    ) {
+    public ResponseEntity<BaseResponse> addAdditionTime(@PathVariable String assignId,
+                                                        @RequestBody UpdateAdditionalTimeRequest req) {
         var data = service.addAdditionTime(assignId, req);
         return ResponseEntity.ok(
                 BaseResponse.builder()

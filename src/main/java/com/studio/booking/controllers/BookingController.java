@@ -94,10 +94,8 @@ public class BookingController {
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/bookings/{id}/status")
-    public ResponseEntity<BaseResponse> updateStatus(
-            @PathVariable String id,
-            @RequestBody BookingStatusRequest req
-    ) {
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody BookingStatusRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update booking status successfully!")
@@ -120,10 +118,8 @@ public class BookingController {
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/bookings/{id}/cancel")
-    public ResponseEntity<BaseResponse> cancelBooking(
-            @PathVariable String id,
-            @RequestParam(required = false) String note
-    ) {
+    public ResponseEntity<BaseResponse> cancelBooking(@PathVariable String id,
+                                                      @RequestParam(required = false) String note) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message(bookingService.cancelBooking(id, note))
@@ -132,14 +128,14 @@ public class BookingController {
 
     @GetMapping("/staff/bookings")
     public ResponseEntity<BaseResponse> getForEmployee(
-            @RequestHeader("Authorization") String token
+            @RequestParam("accountId") String employeeAccountId
 
     ) {
-        String accountId = jwtService.getIdentifierFromToken(token);
+
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Get bookings for employee successfully!")
-                .data(bookingService.getForEmployee(accountId))
+                .data(bookingService.getForEmployee(employeeAccountId))
                 .build());
     }
 }

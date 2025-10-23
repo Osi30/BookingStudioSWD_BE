@@ -29,10 +29,4 @@ public class AccountRequest {
 
     @JsonProperty("userType")
     private UserType userType;
-
-    @JsonProperty("email")
-    private String email;
-
-    @JsonProperty("locationId")
-    private String locationId;
 }

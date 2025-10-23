@@ -14,7 +14,6 @@ public interface AccountService {
     Account getAccountByEmail(String email);
 
     AccountResponse updateAccount(AccountRequest account, String accountId);
-    AccountResponse createAccount(AccountRequest account);
 
     String deleteAccount(String accountId);
 

@@ -3,7 +3,7 @@ package com.studio.booking.controllers;
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.StudioRequest;
 import com.studio.booking.dtos.request.UpdateStatusRequest;
-import com.studio.booking.services.JwtService;
+import com.studio.booking.services.CloudinaryService;
 import com.studio.booking.services.StudioService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class StudioController {
     private final StudioService studioService;
-    private final JwtService jwtService;
 
     @GetMapping
     public ResponseEntity<BaseResponse> getAll(
@@ -61,10 +60,8 @@ public class StudioController {
     //    @SecurityRequirement(name = "BearerAuth")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse> update(
-            @PathVariable String id,
-            @RequestBody StudioRequest req
-    ) {
+    public ResponseEntity<BaseResponse> update(@PathVariable String id,
+                                               @RequestBody StudioRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Update studio successfully!")
@@ -93,25 +90,19 @@ public class StudioController {
     }
 
     @GetMapping("/staff")
-    public ResponseEntity<BaseResponse> getForStaff(
-            @RequestHeader("Authorization") String token
-    ) {
-        String accountId = jwtService.getIdentifierFromToken(token);
-
+    public ResponseEntity<BaseResponse> getForStaff(@RequestParam("accountId") String staffAccountId) {
         return ResponseEntity.ok(
                 BaseResponse.builder()
                         .code(HttpStatus.OK.value())
                         .message("Get studios for staff successfully!")
-                        .data(studioService.getForStaff(accountId))
+                        .data(studioService.getForStaff(staffAccountId))
                         .build()
         );
     }
 
     @PatchMapping("/status/{id}")
-    public ResponseEntity<BaseResponse> updateStatus(
-            @PathVariable String id,
-            @RequestBody UpdateStatusRequest request
-    ) {
+    public ResponseEntity<BaseResponse> updateStatus(@PathVariable String id,
+                                                     @RequestBody UpdateStatusRequest request) {
         return ResponseEntity.ok(
                 BaseResponse.builder()
                         .code(HttpStatus.OK.value())

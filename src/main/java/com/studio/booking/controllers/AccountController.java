@@ -132,19 +132,5 @@ public class AccountController {
                 .data(null)
                 .build());
     }
-
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping()
-    public ResponseEntity<BaseResponse> createAccount(
-            @RequestBody AccountRequest accountRequest
-    ) {
-        AccountResponse response = accountService.createAccount(accountRequest);
-        return ResponseEntity.ok(BaseResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("Create account successfully!")
-                .data(response)
-                .build());
-    }
 }
 
