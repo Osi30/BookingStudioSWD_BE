@@ -1,5 +1,6 @@
 package com.studio.booking.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,6 +39,7 @@ public class Location {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
     private List<Account> accounts;
 }
