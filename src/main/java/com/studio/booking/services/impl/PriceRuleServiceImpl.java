@@ -44,9 +44,9 @@ public class PriceRuleServiceImpl implements PriceRuleService {
         PriceTableItem item = itemRepo.findById(req.getPriceTableItemId())
                 .orElseThrow(() -> new AccountException("PriceTableItem not found with id: " + req.getPriceTableItemId()));
 
-        int dayFilter = req.getDaysOfWeek()
-                .stream().mapToInt(BitUtil::calculateDayBit)
-                .sum();
+        Integer dayFilter = Validation.isValidCollection(req.getDaysOfWeek())
+                ? req.getDaysOfWeek().stream().mapToInt(BitUtil::calculateDayBit).sum()
+                : null;
 
         PriceRule rule = PriceRule.builder()
                 .priceTableItem(item)
