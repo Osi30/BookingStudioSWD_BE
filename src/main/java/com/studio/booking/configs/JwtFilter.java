@@ -16,10 +16,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -60,4 +62,16 @@ public class JwtFilter extends OncePerRequestFilter {
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        AntPathMatcher matcher = new AntPathMatcher();
+        return Arrays
+                .stream(WHITELIST)
+                .anyMatch(p -> matcher.match(p, request.getRequestURI()));
+    }
+
+    public final String[] WHITELIST = {
+            "/auth/google/android-callback"
+    };
 }

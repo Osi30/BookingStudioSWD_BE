@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.services.AuthService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,8 +39,31 @@ public class AuthController {
         String accessToken = authService.exchangeCodeForToken(code);
         // 2. Retrieve user info using access token
         JsonNode userInfo = authService.getUserInfo(accessToken);
+        String email = userInfo.get("email").asText();
+        String name = userInfo.get("name").asText();
 
-        String response = authService.login(userInfo);
+        String response = authService.loginGoogle(email, name);
+
+        BaseResponse baseResponse = BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Token Response")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(baseResponse, HttpStatus.OK);
+    }
+
+    @SecurityRequirement(name = "BearerAuth")
+    @PostMapping("/google/android-callback")
+    public ResponseEntity<BaseResponse> callbackAndroid(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        // Token is authenticated by Spring Security
+
+        // Extract to get info
+        String email = jwt.getClaimAsString("email");
+        String name = jwt.getClaimAsString("name");
+
+        String response = authService.loginGoogle(email, name);
 
         BaseResponse baseResponse = BaseResponse.builder()
                 .code(HttpStatus.OK.value())
