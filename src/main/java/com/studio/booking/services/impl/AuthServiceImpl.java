@@ -43,10 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public String login(JsonNode userInfo) {
-        String email = userInfo.get("email").asText();
-        String name = userInfo.get("name").asText();
-
+    public String loginGoogle(String email, String name) {
         Account googleAccount = accountService.getAccountByEmail(email);
 
         // Create account if not exist one

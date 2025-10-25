@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface AuthService {
 
-    String login(JsonNode userData);
+    String loginGoogle(String email, String name);
 
     String generateOauthURL();
 

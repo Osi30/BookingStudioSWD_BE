@@ -36,6 +36,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("com.sendgrid:sendgrid-java:4.10.3")
     implementation("com.cloudinary:cloudinary-http44:1.39.0")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:6.5.6")
+    implementation("org.springframework.security:spring-security-oauth2-jose:6.5.6")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
