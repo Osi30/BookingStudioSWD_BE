@@ -12,9 +12,11 @@ import com.studio.booking.enums.PaymentType;
 import com.studio.booking.services.BookingService;
 import com.studio.booking.services.JwtService;
 import com.studio.booking.services.PaymentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -30,6 +32,8 @@ public class BookingController {
     private final PaymentService paymentService;
     private final JwtService jwtService;
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/bookings")
     public ResponseEntity<BaseResponse> createBooking(
             @RequestHeader("Authorization") String token,
@@ -57,6 +61,8 @@ public class BookingController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/bookings/profile")
     public ResponseEntity<BaseResponse> getProfileBooking(
             @RequestHeader("Authorization") String token
@@ -69,8 +75,8 @@ public class BookingController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/bookings")
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -80,8 +86,8 @@ public class BookingController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/bookings/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -91,8 +97,8 @@ public class BookingController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/bookings/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(
             @PathVariable String id,
@@ -117,8 +123,8 @@ public class BookingController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/bookings/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(
             @PathVariable String id,
@@ -130,6 +136,8 @@ public class BookingController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('STAFF')")
     @GetMapping("/staff/bookings")
     public ResponseEntity<BaseResponse> getForEmployee(
             @RequestHeader("Authorization") String token

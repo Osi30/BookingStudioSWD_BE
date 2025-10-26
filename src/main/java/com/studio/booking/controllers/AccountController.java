@@ -23,8 +23,8 @@ public class AccountController {
     private final AccountMapper accountMapper;
     private final JwtService jwtService;
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<BaseResponse> getAllAccounts() {
         List<AccountResponse> accountResponses = accountService.getAllAccounts();
@@ -52,8 +52,7 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('CUSTOMER')")
+    @SecurityRequirement(name = "BearerAuth")
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getAccountProfile(
             @RequestHeader("Authorization") String token
@@ -70,8 +69,7 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('CUSTOMER')")
+    @SecurityRequirement(name = "BearerAuth")
     @PutMapping
     public ResponseEntity<BaseResponse> updateAccount(
             @RequestHeader(value = "Authorization") String token,
@@ -88,8 +86,7 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('CUSTOMER')")
+    @SecurityRequirement(name = "BearerAuth")
     @DeleteMapping
     public ResponseEntity<BaseResponse> deleteAccount(
             @RequestHeader(value = "Authorization") String token
@@ -105,8 +102,8 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{accountId}")
     public ResponseEntity<BaseResponse> banAccount(
             @PathVariable String accountId
@@ -121,8 +118,8 @@ public class AccountController {
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
 
-//    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("unban/{accountId}")
     public ResponseEntity<BaseResponse> unban(@PathVariable String accountId) {
         String msg = accountService.unban(accountId);
@@ -133,8 +130,8 @@ public class AccountController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<BaseResponse> createAccount(
             @RequestBody AccountRequest accountRequest

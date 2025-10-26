@@ -27,8 +27,8 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -38,8 +38,8 @@ public class PaymentController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse> getById(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -49,8 +49,8 @@ public class PaymentController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}/status")
     public ResponseEntity<BaseResponse> updateStatus(
             @PathVariable String id,
@@ -82,6 +82,8 @@ public class PaymentController {
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping()
     public ResponseEntity<BaseResponse> create(@RequestBody PaymentRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -91,6 +93,8 @@ public class PaymentController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('STAFF')")
     @PutMapping("staff/cash/{id}/")
     public ResponseEntity<BaseResponse> updateStatusStaff(@PathVariable String id) {
         PaymentStatusRequest req = new PaymentStatusRequest();
@@ -102,6 +106,8 @@ public class PaymentController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("staff/booking/{bookingId}")
     public ResponseEntity<BaseResponse> getByBookingId(@PathVariable String bookingId) {
         return ResponseEntity.ok(
@@ -113,6 +119,8 @@ public class PaymentController {
         );
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     //xem coi payment có done hết chưa
     @GetMapping("/booking/{bookingId}/status")
     public ResponseEntity<BaseResponse> getCompletionStatus(@PathVariable String bookingId) {
@@ -126,6 +134,8 @@ public class PaymentController {
         );
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/booking/{bookingId}/final")
     public ResponseEntity<BaseResponse> createFinalPayment(@PathVariable String bookingId,
                                                            @RequestBody FinalPaymentRequest req) {

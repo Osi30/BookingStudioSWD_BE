@@ -26,7 +26,7 @@ public class PriceRuleController {
     }
 
     @GetMapping()
-    public ResponseEntity<BaseResponse> getByItemId(
+    public ResponseEntity<BaseResponse> getByStudioAndTableId(
             @RequestParam String studioTypeId,
             @RequestParam String priceTableId
     ) {
@@ -37,8 +37,8 @@ public class PriceRuleController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody PriceRuleRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -48,8 +48,8 @@ public class PriceRuleController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(
             @PathVariable String id,
@@ -62,8 +62,8 @@ public class PriceRuleController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
