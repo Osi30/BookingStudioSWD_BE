@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,7 @@ public class Payment {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @CreationTimestamp
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
 

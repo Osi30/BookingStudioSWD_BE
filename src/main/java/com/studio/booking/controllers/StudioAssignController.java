@@ -19,8 +19,8 @@ public class StudioAssignController {
     private final StudioAssignService service;
     private final StudioAssignService studioAssignService;
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<BaseResponse> getAll() {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -30,6 +30,8 @@ public class StudioAssignController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<BaseResponse> getByBooking(@PathVariable String bookingId) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -39,6 +41,8 @@ public class StudioAssignController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/studio/{studioId}")
     public ResponseEntity<BaseResponse> getByStudio(@PathVariable String studioId) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -48,6 +52,8 @@ public class StudioAssignController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody StudioAssignRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -57,6 +63,8 @@ public class StudioAssignController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(
             @PathVariable String id,
@@ -69,6 +77,8 @@ public class StudioAssignController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -77,6 +87,8 @@ public class StudioAssignController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/status/{id}")
     public ResponseEntity<BaseResponse> updateStatus(
             @PathVariable String id,
@@ -91,6 +103,8 @@ public class StudioAssignController {
         );
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     @PatchMapping("/{assignId}/addition-time")
     public ResponseEntity<BaseResponse> addAdditionTime(
             @PathVariable String assignId,

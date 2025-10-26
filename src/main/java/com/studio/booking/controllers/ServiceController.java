@@ -35,8 +35,8 @@ public class ServiceController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(@RequestBody ServiceRequest req) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -46,8 +46,8 @@ public class ServiceController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(
             @PathVariable String id,
@@ -60,8 +60,8 @@ public class ServiceController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -70,6 +70,8 @@ public class ServiceController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/status/{id}")
     public ResponseEntity<BaseResponse> updateStatus(
             @PathVariable String id,

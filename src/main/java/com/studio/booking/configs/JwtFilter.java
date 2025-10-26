@@ -72,6 +72,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     public final String[] WHITELIST = {
-            "/auth/google/android-callback"
+            "/auth/google/android-callback",
+            "/api/payments/vnpay/callback"
     };
 }

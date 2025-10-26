@@ -42,8 +42,8 @@ public class StudioController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BaseResponse> create(
             @RequestPart StudioRequest req,
@@ -58,8 +58,8 @@ public class StudioController {
                         .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseResponse> update(
             @PathVariable String id,
@@ -72,8 +72,8 @@ public class StudioController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse> delete(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -82,8 +82,8 @@ public class StudioController {
                 .build());
     }
 
-    //    @SecurityRequirement(name = "BearerAuth")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/restore")
     public ResponseEntity<BaseResponse> restore(@PathVariable String id) {
         return ResponseEntity.ok(BaseResponse.builder()
@@ -92,6 +92,8 @@ public class StudioController {
                 .build());
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('STAFF')")
     @GetMapping("/staff")
     public ResponseEntity<BaseResponse> getForStaff(
             @RequestHeader("Authorization") String token
@@ -107,6 +109,8 @@ public class StudioController {
         );
     }
 
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("hasRole('STAFF')")
     @PatchMapping("/status/{id}")
     public ResponseEntity<BaseResponse> updateStatus(
             @PathVariable String id,
