@@ -18,6 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -60,6 +61,9 @@ public class Account {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "location_id", referencedColumnName = "location_id")
     private Location location;
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FcmToken> fcmTokens = new ArrayList<>();
 
     @PrePersist
     public void generateId() {
