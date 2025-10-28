@@ -1,5 +1,6 @@
 package com.studio.booking.exceptions;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.exceptions.exceptions.*;
 import org.springframework.http.HttpStatus;
@@ -131,5 +132,15 @@ public class ExceptionGlobalHandler {
                 .data(request.getDescription(false))
                 .build();
         return new ResponseEntity<>(exceptionResponse, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<BaseResponse> handleMessagingException(MessagingException ex, WebRequest request) {
+        BaseResponse exceptionResponse = BaseResponse.builder()
+                .message(ex.getMessage())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .data(request.getDescription(false))
+                .build();
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
