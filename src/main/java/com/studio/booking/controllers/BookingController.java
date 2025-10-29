@@ -13,6 +13,7 @@ import com.studio.booking.services.BookingService;
 import com.studio.booking.services.JwtService;
 import com.studio.booking.services.PaymentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,9 +39,14 @@ public class BookingController {
     public ResponseEntity<BaseResponse> createBooking(
             @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
-    ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+    ) throws UnsupportedEncodingException, NoSuchAlgorithmException,
+            InvalidKeyException, MessagingException
+    {
         String accountId = jwtService.getIdentifierFromToken(token);
         Booking booking = bookingService.createBooking(accountId, bookingRequest);
+
+        // Notification
+        bookingService.sendBookingNotificationToStaff(booking);
 
         // Payment
         Payment payment = paymentService.createPayment(PaymentRequest.builder()

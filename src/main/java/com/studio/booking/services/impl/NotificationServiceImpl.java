@@ -1,7 +1,7 @@
 package com.studio.booking.services.impl;
 
 import com.google.firebase.messaging.*;
-import com.studio.booking.entities.FcmToken;
+import com.studio.booking.dtos.dto.NotificationDTO;
 import com.studio.booking.repositories.FcmTokenRepo;
 import com.studio.booking.services.NotificationService;
 import jakarta.mail.MessagingException;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,20 +20,15 @@ public class NotificationServiceImpl implements NotificationService {
     /// Send notification to multiple devices
     @Async("threadPoolTaskExecutor_FFE")
     @Override
-    public void sendNotificationToUser(String accountId, String title, String body, Map<String, String> data) throws MessagingException {
-        List<String> tokens = fcmTokenRepo.findAllByAccount_Id(accountId)
-                .stream()
-                .map(FcmToken::getToken)
-                .toList();
-
-        if (tokens.isEmpty()) {
+    public void sendNotificationToUser(NotificationDTO req) throws MessagingException {
+        if (req.getTokens().isEmpty()) {
             return;
         }
 
         // Set Up Notification (Title, Body)
         Notification notification = Notification.builder()
-                .setTitle(title)
-                .setBody(body)
+                .setTitle(req.getTitle())
+                .setBody(req.getBody())
                 .build();
 
         // Setup Destination Channel
@@ -48,8 +42,8 @@ public class NotificationServiceImpl implements NotificationService {
         // Create Multicast Message (send multiple devices/time)
         MulticastMessage message = MulticastMessage.builder()
                 .setNotification(notification)
-                .putAllData(data)
-                .addAllTokens(tokens)
+                .putAllData(req.getData())
+                .addAllTokens(req.getTokens())
                 .setAndroidConfig(androidConfig)
                 .build();
 
@@ -59,7 +53,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             // Delete failed token (if any)
             if (response.getFailureCount() > 0) {
-                handleFailedTokens(response.getResponses(), tokens);
+                handleFailedTokens(response.getResponses(), req.getTokens());
             }
         } catch (FirebaseMessagingException e) {
             throw new MessagingException(e.getMessage());
