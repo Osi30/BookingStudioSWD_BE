@@ -4,17 +4,26 @@ import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.entities.Booking;
+import jakarta.mail.MessagingException;
 
 import java.util.List;
 
 public interface BookingService {
     Booking createBooking(String accountId, BookingRequest bookingRequest);
+
     List<BookingResponse> getAll();
+
     List<BookingResponse> getBookingsByAccount(String accountId);
+
     BookingResponse getById(String id);
+
     BookingResponse updateStatus(String id, BookingStatusRequest req);
+
     BookingResponse updateBooking(String id, BookingRequest req);
+
     String cancelBooking(String id, String note);
 
     List<BookingResponse> getForEmployee(String employeeAccountId);
+
+    void sendBookingNotificationToStaff(Booking booking) throws MessagingException;
 }
