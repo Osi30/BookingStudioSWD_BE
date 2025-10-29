@@ -18,6 +18,7 @@ public class BookingResponse {
     private LocalDateTime bookingDate;
     private LocalDateTime updateDate;
     private String note;
+    private String phoneNumber;
     private Double total;
     private BookingStatus status;
     private BookingType bookingType;

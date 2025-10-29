@@ -254,7 +254,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         );
 
         // Find currently available studios (N - No)
-        List<Studio> availableStudio = studioRepo.findAvailableStudio(occupiedStudios);
+        List<Studio> availableStudio = studioRepo.findAvailableStudio(occupiedStudios, locationId);
 
         if (availableStudio.isEmpty()) {
             throw new BookingException("No studio found for the time interval: " +

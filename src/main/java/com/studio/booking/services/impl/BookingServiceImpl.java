@@ -1,5 +1,6 @@
 package com.studio.booking.services.impl;
 
+import com.studio.booking.dtos.dto.NotificationDTO;
 import com.studio.booking.dtos.request.BookingRequest;
 import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.request.StudioAssignRequest;
@@ -15,13 +16,16 @@ import com.studio.booking.enums.BookingType;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.BookingMapper;
 import com.studio.booking.repositories.BookingRepo;
+import com.studio.booking.repositories.FcmTokenRepo;
 import com.studio.booking.services.*;
 import com.studio.booking.utils.Validation;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +34,9 @@ public class BookingServiceImpl implements BookingService {
     private final StudioAssignService studioAssignService;
     private final LocationService locationService;
     private final AccountService accountService;
+    private final NotificationService notificationService;
     private final BookingRepo bookingRepo;
+    private final FcmTokenRepo fcmTokenRepo;
     private final BookingMapper mapper;
 
     @Override
@@ -192,6 +198,30 @@ public class BookingServiceImpl implements BookingService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public void sendBookingNotificationToStaff(Booking booking) throws MessagingException {
+        String locationId = booking.getStudioAssigns()
+                .getFirst().getStudio().getLocation().getId();
+
+        Map<String, String> data = Map.of(
+                "screen", "booking_detail",
+                "booking_id", booking.getId()
+        );
+
+        List<String> tokens = fcmTokenRepo
+                .findAllByRoleStaffAndLocation(AccountRole.STAFF, locationId)
+                .stream().map(FcmToken::getToken).toList();
+
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .tokens(tokens)
+                .title("Booking Mới")
+                .body("Có một booking mới. Nhấp để xem chi tiết.")
+                .data(data)
+                .build();
+
+        notificationService.sendNotificationToUser(notificationDTO);
     }
 
     private Booking getBookingById(String id) {

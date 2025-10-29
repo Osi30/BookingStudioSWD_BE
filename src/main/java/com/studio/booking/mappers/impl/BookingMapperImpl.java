@@ -33,6 +33,7 @@ public class BookingMapperImpl implements BookingMapper {
                 .accountEmail(booking.getAccount() != null ? booking.getAccount().getEmail() : null)
                 .accountName(booking.getAccount() != null ? booking.getAccount().getFullName() : null)
                 .studioTypeName(booking.getStudioType() != null ? booking.getStudioType().getName() : null)
+                .phoneNumber(booking.getPhoneNumber())
                 .build();
     }
 
