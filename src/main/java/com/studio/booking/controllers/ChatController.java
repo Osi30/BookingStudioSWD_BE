@@ -25,4 +25,13 @@ public class ChatController {
                                 .build()
                 ));
     }
+    @PostMapping("/reset")
+    public ResponseEntity<BaseResponse> reset(@RequestParam(defaultValue = "guest") String sessionId) {
+        chatService.resetSession(sessionId);
+        return ResponseEntity.ok(BaseResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Chat session reset successfully!")
+                .data(null)
+                .build());
+    }
 }

@@ -1,57 +1,71 @@
 package com.studio.booking.ai;
-import lombok.RequiredArgsConstructor;
+
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-@RequiredArgsConstructor
 public class GeminiClient {
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
+    private final String apiKey;
 
-    @Value("${ai.gemini.apiKey}")
-    private String apiKey;
-
-    @Value("${ai.gemini.model}")
-    private String model;
-
-    @Value("${ai.gemini.baseUrl}")
-    private String baseUrl;
+    public GeminiClient(@Value("${ai.gemini.apiKey}") String apiKey) {
+        this.apiKey = apiKey;
+        this.webClient = WebClient.builder()
+                .baseUrl("https://generativelanguage.googleapis.com/v1beta")
+                .build();
+    }
 
     public Mono<String> generateResponse(String prompt) {
-        String requestBody = """
-                    {
-                      "contents": [{
-                        "role": "user",
-                        "parts": [{"text": "%s"}]
-                      }]
-                    }
-                """.formatted(prompt.replace("\"", "\\\""));
+        JsonObject content = new JsonObject();
+        JsonArray parts = new JsonArray();
+        JsonObject textPart = new JsonObject();
+        textPart.addProperty("text", prompt);
+        parts.add(textPart);
+        JsonArray contents = new JsonArray();
+        JsonObject contentItem = new JsonObject();
+        contentItem.add("parts", parts);
+        contents.add(contentItem);
+        content.add("contents", contents);
 
-        return webClientBuilder.build()
-                .post()
-                .uri(baseUrl + "/models/" + model + ":generateContent?key=" + apiKey)
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/models/gemini-1.5-flash:generateContent")
+                        .queryParam("key", apiKey)
+                        .build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
+                .bodyValue(content.toString())
                 .retrieve()
                 .bodyToMono(String.class)
-                .map(this::extractText);
+                .map(this::extractTextFromResponse);
     }
 
-    private String extractText(String rawResponse) {
-        // Parse đơn giản: tìm trường "text": "..."
+    private String extractTextFromResponse(String responseBody) {
+        JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
         try {
-            int i = rawResponse.indexOf("\"text\":");
-            if (i == -1) return "[Empty response]";
-            int start = rawResponse.indexOf('"', i + 7) + 1;
-            int end = rawResponse.indexOf('"', start);
-            return rawResponse.substring(start, end)
-                    .replace("\\n", "\n")
-                    .replace("\\\"", "\"");
+            return json.getAsJsonArray("candidates")
+                    .get(0).getAsJsonObject()
+                    .getAsJsonObject("content")
+                    .getAsJsonArray("parts")
+                    .get(0).getAsJsonObject()
+                    .get("text").getAsString();
         } catch (Exception e) {
-            return "[Parse error or unexpected format]";
+            return "(No response)";
         }
     }
+
+    // Stream method
+    public Flux<String> generateResponseStream(String prompt) {
+        return generateResponse(prompt)
+                .flatMapMany(resp -> Flux.fromArray(resp.split(" ")))
+                .delayElements(java.time.Duration.ofMillis(100)); // mô phỏng typing effect
+    }
+
 }
