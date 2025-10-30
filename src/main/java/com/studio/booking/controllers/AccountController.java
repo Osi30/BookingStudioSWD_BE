@@ -117,8 +117,9 @@ public class AccountController {
                 .build();
         return new ResponseEntity<>(baseResponse, HttpStatus.OK);
     }
-
+//dùng để gỡ  ban (unban)  một tài khoản người dùng trong hệ thống
     @SecurityRequirement(name = "BearerAuth")
+// yêu cầu xác thực kiểu Bear Token (JWT)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("unban/{accountId}")
     public ResponseEntity<BaseResponse> unban(@PathVariable String accountId) {
