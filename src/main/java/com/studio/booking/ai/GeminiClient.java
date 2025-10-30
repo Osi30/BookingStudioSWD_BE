@@ -15,11 +15,19 @@ import reactor.core.publisher.Mono;
 public class GeminiClient {
     private final WebClient webClient;
     private final String apiKey;
+    private final String modelName;
+    private final String baseUrl;
 
-    public GeminiClient(@Value("${ai.gemini.apiKey}") String apiKey) {
+    public GeminiClient(
+            @Value("${ai.gemini.apiKey}") String apiKey,
+            @Value("${ai.gemini.model}") String modelName,
+            @Value("${ai.gemini.baseUrl}") String baseUrl
+    ) {
         this.apiKey = apiKey;
+        this.modelName = modelName;
+        this.baseUrl = baseUrl;
         this.webClient = WebClient.builder()
-                .baseUrl("https://generativelanguage.googleapis.com/v1beta")
+                .baseUrl(baseUrl)
                 .build();
     }
 
@@ -29,22 +37,30 @@ public class GeminiClient {
         JsonObject textPart = new JsonObject();
         textPart.addProperty("text", prompt);
         parts.add(textPart);
+
         JsonArray contents = new JsonArray();
         JsonObject contentItem = new JsonObject();
         contentItem.add("parts", parts);
         contents.add(contentItem);
         content.add("contents", contents);
 
+        // 🔹 API mới yêu cầu thêm “-latest”
+        String modelPath = String.format("/models/%s:generateContent", modelName);
+
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/models/gemini-1.5-flash:generateContent")
+                        .path(modelPath)
                         .queryParam("key", apiKey)
                         .build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(content.toString())
                 .retrieve()
                 .bodyToMono(String.class)
-                .map(this::extractTextFromResponse);
+                .map(this::extractTextFromResponse)
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just("⚠️ Lỗi khi gọi Gemini API: " + e.getMessage());
+                });
     }
 
     private String extractTextFromResponse(String responseBody) {

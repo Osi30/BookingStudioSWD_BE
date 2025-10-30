@@ -1,6 +1,6 @@
 package com.studio.booking.ai;
 
-
+import com.studio.booking.enums.IntentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -12,38 +12,56 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChatService {
     private final GeminiClient geminiClient;
+    private final IntentDetector intentDetector;
+    private final ChatDataProvider chatDataProvider;
 
-    // Giả lập session lưu trong RAM (key = userId hoặc "guest")
     private final Map<String, ChatSession> sessions = new ConcurrentHashMap<>();
 
-    // Prompt hệ thống để định hướng chatbot
     private static final String SYSTEM_PROMPT = """
         Bạn là trợ lý AI của hệ thống Booking Studio.
-        Nhiệm vụ của bạn là:
-        - Giải thích, tư vấn các gói dịch vụ, studio, thời gian, và quy trình đặt lịch.
-        - Không cung cấp thông tin ngoài phạm vi dịch vụ của Booking Studio.
-        - Trả lời thân thiện, chuyên nghiệp, ngắn gọn.
-        Ví dụ: "Studio A hiện trống vào cuối tuần, bạn muốn tôi hỗ trợ đặt giúp không?"
+        Hãy trả lời thân thiện, rõ ràng, ngắn gọn và chỉ dựa trên thông tin thật bên dưới.
+        Nếu không tìm thấy dữ liệu liên quan, hãy nói "Xin lỗi, tôi không có thông tin đó."
         """;
 
-    // 🧠 Thêm tham số userMessage
     public Mono<String> chat(String sessionId, String userMessage) {
         ChatSession session = sessions.computeIfAbsent(sessionId, k -> new ChatSession());
-
-        // Ghi lại tin nhắn người dùng
         session.addMessage("User", userMessage);
 
-        // Gộp ngữ cảnh + prompt
-        String fullPrompt = SYSTEM_PROMPT + "\n\n" + session.getContext();
+        return intentDetector.detectIntent(userMessage)
+                .flatMap(intent -> handleIntent(session, intent, userMessage));
+    }
 
-        return geminiClient.generateResponse(fullPrompt)
+    private Mono<String> handleIntent(ChatSession session, IntentType intent, String userMessage) {
+        String contextData = switch (intent) {
+            case LOCATION_INFO -> chatDataProvider.getAllLocations();
+            case SERVICE_INFO -> chatDataProvider.getServiceList();
+            case PRICE_INQUIRY -> chatDataProvider.getBasicPriceInfo();
+            case OPENING_HOURS -> chatDataProvider.getOpeningHours();
+            case BOOKING_INQUIRY -> "Người dùng muốn đặt studio. Bạn có thể hướng dẫn họ truy cập trang Đặt lịch hoặc cung cấp thông tin cần thiết.";
+            default -> "";
+        };
+
+        String finalPrompt = """
+            %s
+
+            Dữ liệu thật của hệ thống:
+            %s
+
+            Ngữ cảnh hội thoại:
+            %s
+
+            Câu hỏi người dùng: "%s"
+
+            Trả lời thân thiện, có dẫn chứng từ dữ liệu trên.
+            """.formatted(SYSTEM_PROMPT, contextData, session.getContext(), userMessage);
+
+        return geminiClient.generateResponse(finalPrompt)
                 .map(reply -> {
                     session.addMessage("AI", reply);
-                    return reply;
+                    return "[Intent: " + intent.name() + "] " + reply;
                 });
     }
 
-    // Reset hội thoại nếu cần
     public void resetSession(String sessionId) {
         sessions.remove(sessionId);
     }

@@ -32,6 +32,6 @@ spring:
 # =====================================
 ai:
   gemini:
-    apiKey: ${GEMINI_API_KEY}         # Đặt trong .env hoặc môi trường server
-    model: gemini-1.5-pro             # Hoặc gemini-1.5-flash nếu muốn nhanh hơn
+    apiKey: ${GEMINI_API_KEY}
+    model: gemini-2.5-flash     # hoặc gemini-2.5-pro
     baseUrl: https://generativelanguage.googleapis.com/v1beta

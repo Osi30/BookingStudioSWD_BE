@@ -112,7 +112,7 @@ public class SecurityConfig {
                                 "/api/price-rules/**",
                                 "/api/payments/vnpay/callback"
                         ).permitAll()
-                        .requestMatchers("/api/**").authenticated()
+//                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

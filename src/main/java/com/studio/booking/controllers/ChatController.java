@@ -14,9 +14,13 @@ import reactor.core.publisher.Mono;
 public class ChatController {
     private final ChatService chatService;
 
+    // ✅ thêm sessionId vào param
     @PostMapping("/send")
-    public Mono<ResponseEntity<BaseResponse>> send(@RequestBody String message) {
-        return chatService.chat(message)
+    public Mono<ResponseEntity<BaseResponse>> send(
+            @RequestParam(defaultValue = "guest") String sessionId,
+            @RequestBody String message
+    ) {
+        return chatService.chat(sessionId, message)
                 .map(response -> ResponseEntity.ok(
                         BaseResponse.builder()
                                 .code(HttpStatus.OK.value())
@@ -25,8 +29,11 @@ public class ChatController {
                                 .build()
                 ));
     }
+
     @PostMapping("/reset")
-    public ResponseEntity<BaseResponse> reset(@RequestParam(defaultValue = "guest") String sessionId) {
+    public ResponseEntity<BaseResponse> reset(
+            @RequestParam(defaultValue = "guest") String sessionId
+    ) {
         chatService.resetSession(sessionId);
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
