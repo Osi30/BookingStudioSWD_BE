@@ -26,3 +26,12 @@ spring:
             redirect-uri: ${GOOGLE_REDIRECT_URI}
 #  profiles:
 #    active: dev
+
+# =====================================
+# 🔮 Cấu hình Chatbox AI (Gemini)
+# =====================================
+ai:
+  gemini:
+    apiKey: ${GEMINI_API_KEY}
+    model: gemini-2.5-flash     # hoặc gemini-2.5-pro
+    baseUrl: https://generativelanguage.googleapis.com/v1beta
