@@ -38,22 +38,25 @@ public class ChatService {
             case PRICE_INQUIRY -> chatDataProvider.getBasicPriceInfo();
             case OPENING_HOURS -> chatDataProvider.getOpeningHours();
             case BOOKING_INQUIRY -> "Người dùng muốn đặt studio. Bạn có thể hướng dẫn họ truy cập trang Đặt lịch hoặc cung cấp thông tin cần thiết.";
+            // ✅ thêm mới:
+            case STUDIO_INFO -> chatDataProvider.getStudioList();
+            // 👇 fallback
             default -> "";
         };
 
         String finalPrompt = """
-            %s
+        %s
 
-            Dữ liệu thật của hệ thống:
-            %s
+        Dữ liệu thật của hệ thống:
+        %s
 
-            Ngữ cảnh hội thoại:
-            %s
+        Ngữ cảnh hội thoại:
+        %s
 
-            Câu hỏi người dùng: "%s"
+        Câu hỏi người dùng: "%s"
 
-            Trả lời thân thiện, có dẫn chứng từ dữ liệu trên.
-            """.formatted(SYSTEM_PROMPT, contextData, session.getContext(), userMessage);
+        Trả lời thân thiện, có dẫn chứng từ dữ liệu trên.
+        """.formatted(SYSTEM_PROMPT, contextData, session.getContext(), userMessage);
 
         return geminiClient.generateResponse(finalPrompt)
                 .map(reply -> {

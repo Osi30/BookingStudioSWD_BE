@@ -154,4 +154,5 @@ public class StudioServiceImpl implements StudioService {
 
         return mapper.toResponse(studio);
     }
+
 }

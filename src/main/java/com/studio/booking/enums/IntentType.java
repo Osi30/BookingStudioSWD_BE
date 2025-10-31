@@ -6,5 +6,6 @@ public enum IntentType {
     OPENING_HOURS,
     LOCATION_INFO,
     SERVICE_INFO,
-    GENERAL_CHAT
+    GENERAL_CHAT,
+    STUDIO_INFO
 }
