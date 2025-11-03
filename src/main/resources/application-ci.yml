@@ -24,9 +24,5 @@ spring:
             redirect-uri: ${GOOGLE_REDIRECT_URI}
 
   # Redis Configuration
-#  data:
-#    redis:
-#      port: ${REDIS_PORT}
-#      host: ${REDIS_HOST}
-#      username: ${REDIS_USERNAME}
-#      password: ${REDIS_PASSWORD}
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration, org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
