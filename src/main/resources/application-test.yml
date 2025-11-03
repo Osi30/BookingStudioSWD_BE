@@ -20,9 +20,9 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: ${GOOGLE_REDIRECT_URI}
   # Redis Configuration
-  data:
-    redis:
-      port: ${REDIS_PORT}
-      host: ${REDIS_HOST}
-      username: ${REDIS_USERNAME}
-      password: ${REDIS_PASSWORD}
+#  data:
+#    redis:
+#      port: ${REDIS_PORT}
+#      host: ${REDIS_HOST}
+#      username: ${REDIS_USERNAME}
+#      password: ${REDIS_PASSWORD}
