@@ -46,6 +46,7 @@ public class StudioMapperImpl implements StudioMapper {
                 .status(studio.getStatus())
                 .locationName(studio.getLocation() != null ? studio.getLocation().getLocationName() : null)
                 .studioTypeName(studio.getStudioType() != null ? studio.getStudioType().getName() : null)
+                .studioTypeId(studio.getStudioType().getId())
                 .build();
     }
 }

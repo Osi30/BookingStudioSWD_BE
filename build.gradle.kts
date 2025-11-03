@@ -39,6 +39,9 @@ dependencies {
     implementation("org.springframework.security:spring-security-oauth2-resource-server:6.5.6")
     implementation("org.springframework.security:spring-security-oauth2-jose:6.5.6")
     implementation("com.google.firebase:firebase-admin:9.7.0")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis:3.5.7")
+    implementation("redis.clients:jedis:7.0.0")
+
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
