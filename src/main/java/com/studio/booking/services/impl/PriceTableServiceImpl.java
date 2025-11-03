@@ -9,6 +9,8 @@ import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.repositories.PriceTableRepo;
 import com.studio.booking.services.PriceTableService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +21,7 @@ public class PriceTableServiceImpl implements PriceTableService {
     private final PriceTableRepo priceTableRepo;
 
     @Override
+    @Cacheable(value = "priceTables", key = "'AllPriceTables'")
     public List<PriceTableResponse> getAll() {
         return priceTableRepo.findAllByStatusNot(PriceTableStatus.DELETED)
                 .stream()
@@ -34,7 +37,8 @@ public class PriceTableServiceImpl implements PriceTableService {
     }
 
     @Override
-    public List<PriceTableResponse> getByTypeId(String typeId){
+    @Cacheable(value = "priceTablesByType", key = "'TablesOf' + #typeId")
+    public List<PriceTableResponse> getByTypeId(String typeId) {
         return priceTableRepo.findAllByStudioType(typeId)
                 .stream()
                 .map(this::toResponse)
@@ -42,6 +46,11 @@ public class PriceTableServiceImpl implements PriceTableService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceTables", "priceTablesByType"},
+            allEntries = true,
+            beforeInvocation = true // Delete cache before below execution
+    )
     public PriceTableResponse create(PriceTableRequest req) {
         // Validate
         if (!req.getStartDate().isBefore(req.getEndDate())) {
@@ -59,6 +68,11 @@ public class PriceTableServiceImpl implements PriceTableService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceTables", "priceTablesByType"},
+            allEntries = true,
+            beforeInvocation = true // Delete cache before below execution
+    )
     public PriceTableResponse update(String id, PriceTableRequest req) {
         PriceTable table = priceTableRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceTable not found with id: " + id));
@@ -73,6 +87,11 @@ public class PriceTableServiceImpl implements PriceTableService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceTables", "priceTablesByType"},
+            allEntries = true,
+            beforeInvocation = true // Delete cache before below execution
+    )
     public String delete(String id) {
         PriceTable table = priceTableRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceTable not found with id: " + id));

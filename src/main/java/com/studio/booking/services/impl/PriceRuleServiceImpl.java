@@ -10,6 +10,9 @@ import com.studio.booking.services.PriceRuleService;
 import com.studio.booking.utils.BitUtil;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import com.studio.booking.exceptions.exceptions.AccountException;
 
@@ -24,6 +27,7 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     private final PriceTableItemRepo itemRepo;
 
     @Override
+    @Cacheable(value = "priceRules", key = "'RulesOfItem' + #priceTableItemId")
     public List<PriceRuleResponse> getByItemId(String priceTableItemId) {
         return ruleRepo.findAllByPriceTableItem_IdAndIsDeletedFalse(priceTableItemId)
                 .stream()
@@ -32,6 +36,7 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     }
 
     @Override
+    @Cacheable(value = "priceRulesOfType", key = "'ItemsOfTable' + #tableId + 'And' + #typeId")
     public List<PriceRuleResponse> getByTableAndType(String tableId, String typeId) {
         return ruleRepo.findAllByTableAndStudioType(tableId, typeId)
                 .stream()
@@ -40,6 +45,16 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    value = {"priceRules"},
+                    key = "{ 'RulesOfItem' + #req.priceTableItemId }"
+            ),
+            @CacheEvict(
+                    value = {"priceRulesOfType"},
+                    allEntries = true
+            )
+    })
     public PriceRuleResponse create(PriceRuleRequest req) {
         PriceTableItem item = itemRepo.findById(req.getPriceTableItemId())
                 .orElseThrow(() -> new AccountException("PriceTableItem not found with id: " + req.getPriceTableItemId()));
@@ -64,6 +79,16 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    value = {"priceRules"},
+                    key = "{ 'RulesOfItem' + #result.priceTableItemId }"
+            ),
+            @CacheEvict(
+                    value = {"priceRulesOfType"},
+                    allEntries = true
+            )
+    })
     public PriceRuleResponse update(String id, PriceRuleRequest req) {
         PriceRule rule = ruleRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceRule not found with id: " + id));
@@ -85,6 +110,10 @@ public class PriceRuleServiceImpl implements PriceRuleService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceRules", "priceRulesOfType"},
+            allEntries = true
+    )
     public String delete(String id) {
         PriceRule rule = ruleRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceRule not found with id: " + id));
