@@ -23,4 +23,5 @@ public class StudioResponse {
     private StudioStatus status;
     private String locationName;
     private String studioTypeName;
+    private String studioTypeId;
 }

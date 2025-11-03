@@ -8,6 +8,8 @@ import com.studio.booking.repositories.LocationRepo;
 import com.studio.booking.services.LocationService;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +21,7 @@ public class LocationServiceImpl implements LocationService {
     private final LocationMapper mapper;
 
     @Override
+    @Cacheable(value = "locations", key = "'AllLocations'")
     public List<Location> getAll(String typeId) {
         if (Validation.isNullOrEmpty(typeId)) {
             return repo.findAllByIsDeletedFalse();
@@ -33,11 +36,13 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    @CacheEvict(value = {"locations"}, allEntries = true)
     public Location create(LocationRequest req) {
         return repo.save(mapper.toEntity(req));
     }
 
     @Override
+    @CacheEvict(value = {"locations"}, allEntries = true)
     public Location update(String id, LocationRequest req) {
         Location existing = getById(id);
         existing = mapper.updateEntity(existing, req);
@@ -45,6 +50,7 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    @CacheEvict(value = {"locations"}, allEntries = true)
     public String delete(String id) {
         Location existing = getById(id);
         existing.setIsDeleted(true);
@@ -53,6 +59,7 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    @CacheEvict(value = {"locations"}, allEntries = true)
     public String restore(String id) {
         Location existing = getById(id);
         existing.setIsDeleted(false);

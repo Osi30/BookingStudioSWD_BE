@@ -11,9 +11,12 @@ import com.studio.booking.mappers.ServiceMapper;
 import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.services.ServiceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
 import java.util.List;
 
-@org.springframework.stereotype.Service  // ⚠ dùng fully-qualified để tránh xung đột
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class ServiceServiceImpl implements ServiceService {
 
@@ -21,6 +24,7 @@ public class ServiceServiceImpl implements ServiceService {
     private final ServiceMapper mapper;
 
     @Override
+    @Cacheable(value = "services", key = "'AllServices'")
     public List<ServiceResponse> getAll() {
         return serviceRepo.findAllByStatusNot(ServiceStatus.DELETED).stream()
                 .map(mapper::toResponse)
@@ -35,6 +39,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @CacheEvict(value = {"services"}, allEntries = true)
     public ServiceResponse create(ServiceRequest req) {
         com.studio.booking.entities.Service serviceEntity = mapper.toEntity(req);
         serviceRepo.save(serviceEntity);
@@ -42,6 +47,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @CacheEvict(value = {"services"}, allEntries = true)
     public ServiceResponse update(String id, ServiceRequest req) {
         com.studio.booking.entities.Service existing = serviceRepo.findById(id)
                 .orElseThrow(() -> new AccountException("Service not found with id: " + id));
@@ -51,6 +57,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @CacheEvict(value = {"services"}, allEntries = true)
     public String delete(String id) {
         com.studio.booking.entities.Service serviceEntity = serviceRepo.findById(id)
                 .orElseThrow(() -> new AccountException("Service not found with id: " + id));
@@ -60,6 +67,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @CacheEvict(value = {"services"}, allEntries = true)
     public ServiceResponse updateStatus(String id, UpdateStatusRequest req) {
         Service service = serviceRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Service not found with id: " + id));

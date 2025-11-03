@@ -9,6 +9,8 @@ import com.studio.booking.repositories.ServiceRepo;
 import com.studio.booking.repositories.StudioTypeRepo;
 import com.studio.booking.services.StudioTypeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +23,7 @@ public class StudioTypeServiceImpl implements StudioTypeService {
     private final StudioTypeMapper mapper;
 
     @Override
+    @Cacheable(value = "studioTypes", key = "'AllStudioTypes'")
     public List<StudioType> getAll() {
         return repo.findAllByIsDeletedFalse();
     }
@@ -32,6 +35,7 @@ public class StudioTypeServiceImpl implements StudioTypeService {
     }
 
     @Override
+    @CacheEvict(value = {"studioTypes"}, allEntries = true)
     public StudioType create(StudioTypeRequest req) {
         validateArea(req);
         StudioType type = mapper.toEntity(req);
@@ -43,6 +47,7 @@ public class StudioTypeServiceImpl implements StudioTypeService {
     }
 
     @Override
+    @CacheEvict(value = {"studioTypes"}, allEntries = true)
     public StudioType update(String id, StudioTypeRequest req) {
         validateArea(req);
         StudioType existing = getById(id);
@@ -54,6 +59,7 @@ public class StudioTypeServiceImpl implements StudioTypeService {
     }
 
     @Override
+    @CacheEvict(value = {"studioTypes"}, allEntries = true)
     public String delete(String id) {
         StudioType existing = getById(id);
         existing.setIsDeleted(true);
@@ -62,6 +68,7 @@ public class StudioTypeServiceImpl implements StudioTypeService {
     }
 
     @Override
+    @CacheEvict(value = {"studioTypes"}, allEntries = true)
     public String restore(String id) {
         StudioType existing = getById(id);
         existing.setIsDeleted(false);

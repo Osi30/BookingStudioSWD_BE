@@ -19,6 +19,8 @@ import com.studio.booking.services.PriceTableItemService;
 import com.studio.booking.utils.BitUtil;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,6 +36,7 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
     private final StudioTypeRepo studioTypeRepo;
 
     @Override
+    @Cacheable(value = "priceTableItems", key = "'ItemsOfTable' + #priceTableId")
     public List<PriceTableItemResponse> getByTableId(String priceTableId) {
         return itemRepo.findAllByPriceTable_Id(priceTableId)
                 .stream()
@@ -42,6 +45,11 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceTableItems"},
+            key = "{ 'ItemsOfTable' + #req.priceTableId }",
+            beforeInvocation = true // Delete cache before below execution
+    )
     public PriceTableItemResponse create(PriceTableItemRequest req) {
         PriceTable table = tableRepo.findById(req.getPriceTableId())
                 .orElseThrow(() -> new AccountException("PriceTable not found with id: " + req.getPriceTableId()));
@@ -60,6 +68,10 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceTableItems"},
+            key = "{ 'ItemsOfTable' + #result.priceTableId }"
+    )
     public PriceTableItemResponse update(String id, PriceTableItemRequest req) {
         PriceTableItem item = itemRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceTableItem not found with id: " + id));
@@ -85,6 +97,10 @@ public class PriceTableItemServiceImpl implements PriceTableItemService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"priceTableItems"},
+           allEntries = true
+    )
     public String delete(String id) {
         PriceTableItem item = itemRepo.findById(id)
                 .orElseThrow(() -> new AccountException("PriceTableItem not found with id: " + id));

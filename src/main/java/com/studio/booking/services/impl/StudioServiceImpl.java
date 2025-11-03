@@ -20,6 +20,9 @@ import com.studio.booking.services.CloudinaryService;
 import com.studio.booking.services.StudioService;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,6 +39,7 @@ public class StudioServiceImpl implements StudioService {
     private final StudioMapper mapper;
 
     @Override
+    @Cacheable(value = "studios", key = "#studioTypeId != null ? #studioTypeId : 'AllStudios'")
     public List<StudioResponse> getAll(String studioTypeId) {
         List<Studio> studios = Validation.isNullOrEmpty(studioTypeId)
                 ? studioRepo.findAllByStatusNot(StudioStatus.DELETED)
@@ -54,6 +58,18 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    value = {"studios"},
+                    key = "{ 'AllStudios', #req.getStudioTypeId() }",
+                    beforeInvocation = true // Delete cache before below execution
+            ),
+            @CacheEvict(
+                    value = {"studiosStaff"},
+                    allEntries = true,
+                    beforeInvocation = true // Delete cache before below execution
+            )
+    })
     public StudioResponse create(StudioRequest req) throws IOException {
         Location location = locationRepo.findById(req.getLocationId())
                 .orElseThrow(() -> new StudioException("Location not found with id: " + req.getLocationId()));
@@ -77,6 +93,17 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    value = {"studios"},
+                    key = "{ 'AllStudios', #result.studioTypeId }"
+            ),
+            @CacheEvict(
+                    value = {"studiosStaff"},
+                    allEntries = true
+            )
+    })
+
     public StudioResponse update(String id, StudioRequest req) {
         Studio existing = studioRepo.findById(id)
                 .orElseThrow(() -> new StudioException("Studio not found: " + id));
@@ -102,6 +129,9 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"studios", "studiosStaff"}, allEntries = true
+    )
     public String delete(String id) {
         Studio existing = studioRepo.findById(id)
                 .orElseThrow(() -> new StudioException("Studio not found: " + id));
@@ -111,6 +141,9 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
+    @CacheEvict(
+            value = {"studios", "studiosStaff"}, allEntries = true
+    )
     public String restore(String id) {
         Studio existing = studioRepo.findById(id)
                 .orElseThrow(() -> new StudioException("Studio not found: " + id));
@@ -120,6 +153,7 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
+    @Cacheable(value = "studiosStaff", key = "#staffAccountId")
     public List<StudioResponse> getForStaff(String staffAccountId) {
         Account staff = accountService.getAccountById(staffAccountId);
         if (staff.getRole() != AccountRole.STAFF) {
@@ -134,6 +168,16 @@ public class StudioServiceImpl implements StudioService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    value = {"studios"},
+                    key = "{ 'AllStudios', #result.studioTypeId }"
+            ),
+            @CacheEvict(
+                    value = {"studiosStaff"},
+                    allEntries = true
+            )
+    })
     public StudioResponse updateStatus(String id, UpdateStatusRequest request) {
         var studio = studioRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Studio not found with id: " + id));
