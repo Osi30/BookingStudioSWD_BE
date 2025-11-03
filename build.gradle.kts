@@ -24,6 +24,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
     implementation("org.modelmapper:modelmapper:3.1.1")
     implementation("org.apache.commons:commons-text:1.14.0") {
@@ -42,6 +43,18 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis:3.5.7")
     implementation("redis.clients:jedis:7.0.0")
 
+
+    // 👉 ADD FOR CHATBOT AI
+    // Gọi Gemini API qua WebClient (reactive HTTP client)
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Xử lý JSON (đọc response của Gemini)
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+
+    // Reactor Core (Mono, Flux) — phù hợp với WebFlux
+    implementation("io.projectreactor:reactor-core")
+
+    // 👉 END CHATBOT AI
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
