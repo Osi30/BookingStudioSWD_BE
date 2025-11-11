@@ -69,16 +69,40 @@ public class PaymentController {
         String transactionStatus = params.get("vnp_TransactionStatus");
         String orderId = params.get("vnp_OrderInfo");
 
-        String response = paymentService.handlePaymentCallback(
+        paymentService.handlePaymentCallback(
                 "00".equals(responseCode) && "00".equals(transactionStatus),
                 orderId
         );
 
+        // Setup HTTP Redirection
         String redirectPath = "00".equals(responseCode) ? "/checkout/result?status=success" : "/checkout/result?status=fail";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(frontEndUrl + redirectPath));
 
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+    @PostMapping("/momo/callback")
+    public ResponseEntity<BaseResponse> handleMomoCallback(
+            @RequestBody Map<String, String> callbackData
+    ) {
+        String paymentId = callbackData.get("orderId");
+        String resultCode = callbackData.get("resultCode");
+
+        paymentService.handlePaymentCallback(
+                "0".equals(resultCode),
+                paymentId
+        );
+
+        // Setup HTTP Redirection
+        String redirectPath = "0".equals(resultCode) ? "/checkout/result?status=success" : "/checkout/result?status=fail";
+
+        // Set up header Location
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(frontEndUrl + redirectPath));
+
+        // Set up 302 status
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 

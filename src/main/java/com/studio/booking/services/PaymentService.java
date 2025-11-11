@@ -2,7 +2,6 @@ package com.studio.booking.services;
 
 import com.studio.booking.dtos.request.PaymentRequest;
 import com.studio.booking.dtos.request.PaymentStatusRequest;
-import com.studio.booking.dtos.response.BookingResponse;
 import com.studio.booking.dtos.response.PaymentCompletionStatusResponse;
 import com.studio.booking.dtos.response.PaymentResponse;
 import com.studio.booking.entities.Booking;
@@ -20,7 +19,7 @@ public interface PaymentService {
             throws UnsupportedEncodingException,
             NoSuchAlgorithmException,
             InvalidKeyException;
-    String handlePaymentCallback(Boolean isSuccess, String paymentId);
+    void handlePaymentCallback(Boolean isSuccess, String paymentId);
     List<PaymentResponse> getAll();
     PaymentResponse getById(String id);
     PaymentResponse updateStatus(String id, PaymentStatusRequest req);

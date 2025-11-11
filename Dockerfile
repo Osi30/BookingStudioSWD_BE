@@ -2,7 +2,7 @@
 
 # Stage 1: Build the Spring Boot application
 #1 JDK and Assign this Stage Name to be 'build'
-FROM openjdk:21-slim AS build
+FROM openjdk:21-ea-jdk-slim AS build
 
 #2 Set Working Directory
 WORKDIR /app
@@ -25,7 +25,7 @@ RUN ./gradlew bootJar --no-daemon
 
 # Stage 2: Create the final production image
 #1 JDK
-FROM openjdk:21-slim
+FROM openjdk:21-ea-jdk-slim
 
 #2 Set Working Directory
 WORKDIR /app

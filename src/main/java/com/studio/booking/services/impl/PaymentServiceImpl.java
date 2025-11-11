@@ -6,6 +6,7 @@ import com.studio.booking.dtos.response.PaymentCompletionStatusResponse;
 import com.studio.booking.dtos.response.PaymentResponse;
 import com.studio.booking.entities.Booking;
 import com.studio.booking.entities.Payment;
+import com.studio.booking.enums.BookingStatus;
 import com.studio.booking.enums.PaymentMethod;
 import com.studio.booking.enums.PaymentStatus;
 import com.studio.booking.enums.PaymentType;
@@ -14,6 +15,7 @@ import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.mappers.PaymentMapper;
 import com.studio.booking.repositories.BookingRepo;
 import com.studio.booking.repositories.PaymentRepo;
+import com.studio.booking.services.MomoService;
 import com.studio.booking.services.PaymentService;
 import com.studio.booking.services.VnPayService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final VnPayService vnPayService;
+    private final MomoService momoService;
     private final PaymentRepo paymentRepo;
     private final BookingRepo bookingRepo;
     private final PaymentMapper mapper;
@@ -50,18 +53,17 @@ public class PaymentServiceImpl implements PaymentService {
     public String createPaymentUrl(Payment payment) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
         return switch (payment.getPaymentMethod()) {
             case VNPAY -> vnPayService.createVNPayUrl(payment);
-//            case MOMO -> momoService.createMomoUrl(response);
+            case MOMO -> momoService.createMomoUrl(payment);
             default -> "Pay by cash successfully";
         };
     }
 
     @Override
-    public String handlePaymentCallback(Boolean isSuccess, String paymentId) {
+    public void handlePaymentCallback(Boolean isSuccess, String paymentId) {
         PaymentStatus paymentStatus = isSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
         updateStatus(paymentId, PaymentStatusRequest.builder()
                 .status(paymentStatus)
                 .build());
-        return "Payment updated successfully";
     }
 
     @Override
@@ -93,7 +95,23 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.setStatus(req.getStatus());
+
+        if (req.getStatus().equals(PaymentStatus.SUCCESS)) {
+            payment.getBooking().setStatus(
+                    payment.getBooking().getStatus().equals(BookingStatus.AWAITING_PAYMENT)
+                            ? BookingStatus.CONFIRMED
+                            : payment.getBooking().getStatus()
+            );
+        }
+
+        if (payment.getBooking().isComplete()){
+            payment.getBooking().setStatus(BookingStatus.COMPLETED);
+        }
+
         paymentRepo.save(payment);
+
+
+
         return mapper.toResponse(payment);
     }
 
