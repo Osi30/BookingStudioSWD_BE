@@ -1,6 +1,7 @@
 package com.studio.booking.configs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -48,6 +49,7 @@ public class RedisConfig {
     private ObjectMapper objectMapper() {
         return Jackson2ObjectMapperBuilder.json()
                 .modules(new JavaTimeModule())
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
     }
 
