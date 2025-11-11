@@ -21,7 +21,7 @@ public interface BookingService {
 
     BookingResponse updateBooking(String id, BookingRequest req);
 
-    String cancelBooking(String id, String note);
+    Booking cancelBooking(String id, String note);
 
     List<BookingResponse> getForEmployee(String employeeAccountId);
 

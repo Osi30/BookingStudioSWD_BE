@@ -2,13 +2,10 @@ package com.studio.booking.controllers;
 
 import com.studio.booking.dtos.BaseResponse;
 import com.studio.booking.dtos.request.BookingRequest;
-import com.studio.booking.dtos.request.BookingStatusRequest;
 import com.studio.booking.dtos.request.PaymentRequest;
 import com.studio.booking.entities.Booking;
 import com.studio.booking.entities.Payment;
-import com.studio.booking.enums.BookingType;
-import com.studio.booking.enums.PaymentStatus;
-import com.studio.booking.enums.PaymentType;
+import com.studio.booking.enums.*;
 import com.studio.booking.services.BookingService;
 import com.studio.booking.services.JwtService;
 import com.studio.booking.services.PaymentService;
@@ -40,8 +37,7 @@ public class BookingController {
             @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest bookingRequest
     ) throws UnsupportedEncodingException, NoSuchAlgorithmException,
-            InvalidKeyException, MessagingException
-    {
+            InvalidKeyException, MessagingException {
         String accountId = jwtService.getIdentifierFromToken(token);
         Booking booking = bookingService.createBooking(accountId, bookingRequest);
 
@@ -103,31 +99,19 @@ public class BookingController {
                 .build());
     }
 
-    @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/bookings/{id}/status")
-    public ResponseEntity<BaseResponse> updateStatus(
-            @PathVariable String id,
-            @RequestBody BookingStatusRequest req
-    ) {
-        return ResponseEntity.ok(BaseResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("Update booking status successfully!")
-                .data(bookingService.updateStatus(id, req))
-                .build());
-    }
-
-    @PutMapping("bookings/{id}")
-    public ResponseEntity<BaseResponse> update(
-            @PathVariable String id,
-            @RequestBody BookingRequest req
-    ) {
-        return ResponseEntity.ok(BaseResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("Update booking successfully!")
-                .data(bookingService.updateBooking(id, req))
-                .build());
-    }
+//    @SecurityRequirement(name = "BearerAuth")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PutMapping("/bookings/{id}/status")
+//    public ResponseEntity<BaseResponse> updateStatus(
+//            @PathVariable String id,
+//            @RequestBody BookingStatusRequest req
+//    ) {
+//        return ResponseEntity.ok(BaseResponse.builder()
+//                .code(HttpStatus.OK.value())
+//                .message("Update booking status successfully!")
+//                .data(bookingService.updateStatus(id, req))
+//                .build());
+//    }
 
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
@@ -136,9 +120,20 @@ public class BookingController {
             @PathVariable String id,
             @RequestParam(required = false) String note
     ) {
+        Booking booking = bookingService.cancelBooking(id, note);
+        if (booking.getStatus().equals(BookingStatus.AWAITING_PAYMENT)) {
+            // Payment
+            paymentService.createPayment(PaymentRequest.builder()
+                    .amount(booking.getRefundPrice() * 70 / 100)
+                    .paymentMethod(PaymentMethod.CASH)
+                    .status(PaymentStatus.PENDING)
+                    .paymentType(PaymentType.REFUND_PAYMENT)
+                    .build(), booking);
+        }
+
         return ResponseEntity.ok(BaseResponse.builder()
                 .code(HttpStatus.OK.value())
-                .message(bookingService.cancelBooking(id, note))
+                .message("Booking is cancelled successfully!")
                 .build());
     }
 

@@ -75,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
         Location location = locationService.getById(bookingRequest.getLocationId());
 
         Booking booking = mapper.toBooking(bookingRequest);
-        booking.setStatus(BookingStatus.IN_PROGRESS);
+        booking.setStatus(BookingStatus.AWAITING_PAYMENT);
         booking.setStudioType(studioType);
 
         // Studio Assigns
@@ -133,7 +133,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
 
-        if (req.getStatus() == null) {
+        if (req.getStatus() == null || booking.getStatus().equals(BookingStatus.CANCELLED)) {
             throw new IllegalArgumentException("Booking status cannot be null");
         }
 
@@ -186,7 +186,7 @@ public class BookingServiceImpl implements BookingService {
             value = {"bookings", "accountBookings", "employeeBookings"},
             allEntries = true
     )
-    public String cancelBooking(String id, String note) {
+    public Booking cancelBooking(String id, String note) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
 
@@ -202,11 +202,18 @@ public class BookingServiceImpl implements BookingService {
         }
 
         // If pay full then customer will be refund, if deposit then booking is being cancelled
-        booking.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
-                ? BookingStatus.AWAITING_REFUND : BookingStatus.CANCELLED);
-        bookingRepo.save(booking);
-
-        return "Booking cancelled successfully!";
+        if (booking.getBookingType().equals(BookingType.PAY_FULL)) {
+            booking.setStatus(BookingStatus.AWAITING_REFUND);
+            booking.getStudioAssigns().stream()
+                    .filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON))
+                    .forEach(s -> s.setStatus(AssignStatus.AWAITING_REFUND));
+        } else {
+            booking.setStatus(BookingStatus.CANCELLED);
+            booking.getStudioAssigns().stream()
+                    .filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON))
+                    .forEach(s -> s.setStatus(AssignStatus.CANCELLED));
+        }
+        return bookingRepo.save(booking);
     }
 
 
