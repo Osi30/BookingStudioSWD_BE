@@ -25,7 +25,7 @@ RUN ./gradlew bootJar --no-daemon
 
 # Stage 2: Create the final production image
 #1 JDK
-FROM openjdk:21-slim
+FROM openjdk:21-ea-jdk-slim
 
 #2 Set Working Directory
 WORKDIR /app
