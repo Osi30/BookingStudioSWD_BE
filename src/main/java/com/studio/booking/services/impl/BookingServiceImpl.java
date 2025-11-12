@@ -21,9 +21,6 @@ import com.studio.booking.services.*;
 import com.studio.booking.utils.Validation;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -107,9 +104,25 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse getById(String id) {
-        Booking booking = bookingRepo.findById(id)
-                .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
+        Booking booking = getBookingById(id);
         return mapper.toResponse(booking);
+    }
+
+    @Override
+    public List<BookingResponse> getForEmployee(String employeeAccountId) {
+        Account employee = accountService.getAccountById(employeeAccountId);
+        if (employee.getRole() != AccountRole.STAFF) {
+            throw new BookingException("Only staff can view bookings by location");
+        }
+        if (employee.getLocation() == null) {
+            throw new BookingException("Staff does not have a location assigned");
+        }
+
+        String locationId = employee.getLocation().getId();
+        return bookingRepo.findAllByLocationId(locationId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -172,43 +185,22 @@ public class BookingServiceImpl implements BookingService {
         }
 
         List<StudioAssign> activeStudioAssigns = booking.getStudioAssigns()
-                .stream().filter(sa -> sa.getStatus().equals(AssignStatus.IS_HAPPENING) || sa.isOutOfUpdated())
+                .stream().filter(StudioAssign::isOutOfUpdated)
                 .toList();
         if (Validation.isValidCollection(activeStudioAssigns)) {
-            throw new BookingException("Some studio assign in booking is already in progress");
+            throw new BookingException("Cannot cancel booking with 2 days from the start date");
         }
 
         // If pay full then customer will be refund, if deposit then booking is being cancelled
-        if (booking.getBookingType().equals(BookingType.PAY_FULL)) {
-            booking.setStatus(BookingStatus.AWAITING_REFUND);
-            booking.getStudioAssigns().stream()
-                    .filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON))
-                    .forEach(s -> s.setStatus(AssignStatus.AWAITING_REFUND));
-        } else {
-            booking.setStatus(BookingStatus.CANCELLED);
-            booking.getStudioAssigns().stream()
-                    .filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON))
-                    .forEach(s -> s.setStatus(AssignStatus.CANCELLED));
-        }
+        booking.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
+                ? BookingStatus.AWAITING_REFUND
+                : BookingStatus.CANCELLED
+        );
+
+        booking.getStudioAssigns()
+                .forEach(s -> s.setStatus(AssignStatus.CANCELLED));
+
         return bookingRepo.save(booking);
-    }
-
-
-    @Override
-    public List<BookingResponse> getForEmployee(String employeeAccountId) {
-        Account employee = accountService.getAccountById(employeeAccountId);
-        if (employee.getRole() != AccountRole.STAFF) {
-            throw new BookingException("Only staff can view bookings by location");
-        }
-        if (employee.getLocation() == null) {
-            throw new BookingException("Staff does not have a location assigned");
-        }
-
-        String locationId = employee.getLocation().getId();
-        return bookingRepo.findAllByLocationId(locationId)
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
     }
 
     @Override

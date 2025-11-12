@@ -178,8 +178,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
                 .forEach(s -> s.setStatus(ServiceAssignStatus.CANCELLED));
 
         // Update Assign Studio Status
-        assign.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
-                ? AssignStatus.AWAITING_REFUND : AssignStatus.CANCELLED);
+        assign.setStatus(AssignStatus.CANCELLED);
         assignRepo.save(assign);
         return "Studio assignment cancelled successfully!";
     }
@@ -209,7 +208,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
             studioAssign.getBooking().setStatus(BookingStatus.IN_PROGRESS);
         }
         // if booking is already complete now
-        else if(studioAssign.getBooking().isComplete()){
+        else if (studioAssign.getBooking().isComplete()) {
             studioAssign.getBooking().setStatus(BookingStatus.COMPLETED);
         }
 

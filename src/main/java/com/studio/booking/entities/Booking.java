@@ -69,7 +69,7 @@ public class Booking {
 
     public Double getRefundPrice() {
         return this.studioAssigns.stream()
-                .filter(s -> s.getStatus().equals(AssignStatus.AWAITING_REFUND))
+                .filter(s -> s.getStatus().equals(AssignStatus.CANCELLED))
                 .mapToDouble(s -> s.getStudioAmount() + s.getServiceAmount())
                 .sum();
     }
@@ -115,9 +115,9 @@ public class Booking {
 
     private Boolean isCompleteAssign() {
         List<StudioAssign> assigns = this.studioAssigns
-                .stream().filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON)
+                .stream().filter(s
+                        -> s.getStatus().equals(AssignStatus.COMING_SOON)
                         || s.getStatus().equals(AssignStatus.IS_HAPPENING)
-                        || s.getStatus().equals(AssignStatus.AWAITING_REFUND)
                 )
                 .toList();
 
