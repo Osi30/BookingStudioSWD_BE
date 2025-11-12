@@ -21,6 +21,7 @@ import com.studio.booking.services.PaymentService;
 import com.studio.booking.services.VnPayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -163,6 +164,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     public PaymentResponse createFinalPayment(String bookingId, PaymentMethod method) {
         if (method == null) {
             throw new IllegalArgumentException("Payment method is required");
@@ -185,13 +187,21 @@ public class PaymentServiceImpl implements PaymentService {
 
         double remaining = Math.max(bookingTotal - paidSuccess, 0D);
 
-        var finalPayment = new Payment();
+        // Nếu đã có FINAL_PAYMENT trước đó, update thay vì tạo mới
+        var maybeExistingFinal = paymentRepo
+                .findTopByBooking_IdAndPaymentTypeOrderByPaymentDateDesc(bookingId, PaymentType.FINAL_PAYMENT);
+
+        Payment finalPayment = maybeExistingFinal.orElseGet(Payment::new);
+
+        // Gán/ cập nhật thông tin
         finalPayment.setPaymentType(PaymentType.FINAL_PAYMENT);
-        finalPayment.setStatus(PaymentStatus.PENDING);
-        finalPayment.setAmount(remaining);
         finalPayment.setBooking(booking);
-        finalPayment.setPaymentDate(java.time.LocalDateTime.now());
+        finalPayment.setAmount(remaining);
         finalPayment.setPaymentMethod(method);
+        finalPayment.setPaymentDate(java.time.LocalDateTime.now());
+
+        // Nếu remaining = 0, có thể coi là đã hoàn tất
+        finalPayment.setStatus(remaining <= 0.0 ? PaymentStatus.SUCCESS : PaymentStatus.PENDING);
 
         finalPayment = paymentRepo.save(finalPayment);
         return mapper.toResponse(finalPayment);
