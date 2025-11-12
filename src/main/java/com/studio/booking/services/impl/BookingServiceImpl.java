@@ -43,16 +43,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper mapper;
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(
-                    value = {"bookings", "employeeBookings"},
-                    allEntries = true
-            ),
-            @CacheEvict(
-                    value = {"accountBookings"},
-                    key = "{'BookingsOf' + #accountId}"
-            )
-    })
     public Booking createBooking(String accountId, BookingRequest bookingRequest) {
         // Validation
         if (Validation.isNullOrEmpty(bookingRequest.getStudioTypeId())) {
@@ -102,7 +92,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Cacheable(value = "bookings", key = "'AllBookings'")
     public List<BookingResponse> getAll() {
         return bookingRepo.findAll().stream()
                 .map(mapper::toResponse)
@@ -110,7 +99,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Cacheable(value = "accountBookings", key = "'BookingsOf' + #accountId")
     public List<BookingResponse> getBookingsByAccount(String accountId) {
         return bookingRepo.findAllByAccount_Id(accountId).stream()
                 .map(mapper::toResponse)
@@ -125,10 +113,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @CacheEvict(
-            value = {"bookings", "accountBookings", "employeeBookings"},
-            allEntries = true
-    )
     public BookingResponse updateStatus(String id, BookingStatusRequest req) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
@@ -147,10 +131,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @CacheEvict(
-            value = {"bookings", "accountBookings", "employeeBookings"},
-            allEntries = true
-    )
     public BookingResponse updateBooking(String id, BookingRequest req) {
         Booking booking = getBookingById(id);
         booking = mapper.updateBooking(booking, req);
@@ -182,20 +162,17 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @CacheEvict(
-            value = {"bookings", "accountBookings", "employeeBookings"},
-            allEntries = true
-    )
     public Booking cancelBooking(String id, String note) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
 
-        if (!booking.getStatus().equals(BookingStatus.IN_PROGRESS)) {
-            throw new BookingException("Booking is not in progress for cancellation");
+        // Validation
+        if (!booking.getStatus().equals(BookingStatus.CONFIRMED)) {
+            throw new BookingException("Booking is not in confirmed for cancellation");
         }
 
         List<StudioAssign> activeStudioAssigns = booking.getStudioAssigns()
-                .stream().filter(sa -> sa.getStatus().equals(AssignStatus.IS_HAPPENING))
+                .stream().filter(sa -> sa.getStatus().equals(AssignStatus.IS_HAPPENING) || sa.isOutOfUpdated())
                 .toList();
         if (Validation.isValidCollection(activeStudioAssigns)) {
             throw new BookingException("Some studio assign in booking is already in progress");
@@ -218,7 +195,6 @@ public class BookingServiceImpl implements BookingService {
 
 
     @Override
-    @Cacheable(value = "employeeBookings", key = "'BookingsOfEmployee'+#employeeAccountId")
     public List<BookingResponse> getForEmployee(String employeeAccountId) {
         Account employee = accountService.getAccountById(employeeAccountId);
         if (employee.getRole() != AccountRole.STAFF) {

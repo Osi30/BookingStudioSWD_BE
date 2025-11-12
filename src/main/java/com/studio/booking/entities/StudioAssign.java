@@ -7,7 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @AllArgsConstructor
@@ -50,4 +52,10 @@ public class StudioAssign {
 
     @OneToMany(mappedBy = "studioAssign", cascade = CascadeType.ALL)
     private List<ServiceAssign> serviceAssigns;
+
+    public Boolean isOutOfUpdated(){
+        LocalDate now = LocalDate.now();
+        long dateBetween = ChronoUnit.DAYS.between(now, startTime.toLocalDate());
+        return dateBetween <= 2;
+    }
 }
