@@ -178,8 +178,7 @@ public class StudioAssignServiceImpl implements StudioAssignService {
                 .forEach(s -> s.setStatus(ServiceAssignStatus.CANCELLED));
 
         // Update Assign Studio Status
-        assign.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
-                ? AssignStatus.AWAITING_REFUND : AssignStatus.CANCELLED);
+        assign.setStatus(AssignStatus.CANCELLED);
         assignRepo.save(assign);
         return "Studio assignment cancelled successfully!";
     }
@@ -201,21 +200,19 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         }
 
         studioAssign.setStatus(newStatus);
-        studioAssignRepo.save(studioAssign);
 
-        if (newStatus.equals(AssignStatus.ENDED)) {
-            boolean stillOpen = studioAssignRepo.existsByBooking_IdAndStatusNot(studioAssign.getBooking().getId(), AssignStatus.ENDED);
-            System.out.println(stillOpen);
-            if (!stillOpen) {
-                var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
-                booking.setStatus(BookingStatus.COMPLETED);
-                bookingRepo.save(booking);
-            }
-        } else {
-            var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
-            booking.setStatus(BookingStatus.IN_PROGRESS);
-            bookingRepo.save(booking);
+        // Change booking status
+        // if assign is happening but booking is confirmed
+        if (newStatus.equals(AssignStatus.IS_HAPPENING)
+                && studioAssign.getBooking().getStatus().equals(BookingStatus.CONFIRMED)) {
+            studioAssign.getBooking().setStatus(BookingStatus.IN_PROGRESS);
         }
+        // if booking is already complete now
+        else if (studioAssign.getBooking().isComplete()) {
+            studioAssign.getBooking().setStatus(BookingStatus.COMPLETED);
+        }
+
+        studioAssignRepo.save(studioAssign);
 
         return toResponse(studioAssign);
     }

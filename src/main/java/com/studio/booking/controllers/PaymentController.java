@@ -64,7 +64,9 @@ public class PaymentController {
     }
 
     @GetMapping("/vnpay/callback")
-    public ResponseEntity<BaseResponse> handleVnPayCallback(@RequestParam Map<String, String> params) {
+    public ResponseEntity<BaseResponse> handleVnPayCallback(
+            @RequestParam Map<String, String> params
+    ) {
         String responseCode = params.get("vnp_ResponseCode");
         String transactionStatus = params.get("vnp_TransactionStatus");
         String orderId = params.get("vnp_OrderInfo");
@@ -83,9 +85,9 @@ public class PaymentController {
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
-    @PostMapping("/momo/callback")
+    @GetMapping("/momo/callback")
     public ResponseEntity<BaseResponse> handleMomoCallback(
-            @RequestBody Map<String, String> callbackData
+            @RequestParam Map<String, String> callbackData
     ) {
         String paymentId = callbackData.get("orderId");
         String resultCode = callbackData.get("resultCode");

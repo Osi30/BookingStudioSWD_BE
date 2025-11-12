@@ -21,9 +21,6 @@ import com.studio.booking.services.*;
 import com.studio.booking.utils.Validation;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -43,16 +40,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper mapper;
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(
-                    value = {"bookings", "employeeBookings"},
-                    allEntries = true
-            ),
-            @CacheEvict(
-                    value = {"accountBookings"},
-                    key = "{'BookingsOf' + #accountId}"
-            )
-    })
     public Booking createBooking(String accountId, BookingRequest bookingRequest) {
         // Validation
         if (Validation.isNullOrEmpty(bookingRequest.getStudioTypeId())) {
@@ -102,7 +89,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Cacheable(value = "bookings", key = "'AllBookings'")
     public List<BookingResponse> getAll() {
         return bookingRepo.findAll().stream()
                 .map(mapper::toResponse)
@@ -110,7 +96,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Cacheable(value = "accountBookings", key = "'BookingsOf' + #accountId")
     public List<BookingResponse> getBookingsByAccount(String accountId) {
         return bookingRepo.findAllByAccount_Id(accountId).stream()
                 .map(mapper::toResponse)
@@ -119,16 +104,28 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse getById(String id) {
-        Booking booking = bookingRepo.findById(id)
-                .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
+        Booking booking = getBookingById(id);
         return mapper.toResponse(booking);
     }
 
     @Override
-    @CacheEvict(
-            value = {"bookings", "accountBookings", "employeeBookings"},
-            allEntries = true
-    )
+    public List<BookingResponse> getForEmployee(String employeeAccountId) {
+        Account employee = accountService.getAccountById(employeeAccountId);
+        if (employee.getRole() != AccountRole.STAFF) {
+            throw new BookingException("Only staff can view bookings by location");
+        }
+        if (employee.getLocation() == null) {
+            throw new BookingException("Staff does not have a location assigned");
+        }
+
+        String locationId = employee.getLocation().getId();
+        return bookingRepo.findAllByLocationId(locationId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public BookingResponse updateStatus(String id, BookingStatusRequest req) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
@@ -147,10 +144,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @CacheEvict(
-            value = {"bookings", "accountBookings", "employeeBookings"},
-            allEntries = true
-    )
     public BookingResponse updateBooking(String id, BookingRequest req) {
         Booking booking = getBookingById(id);
         booking = mapper.updateBooking(booking, req);
@@ -182,57 +175,32 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @CacheEvict(
-            value = {"bookings", "accountBookings", "employeeBookings"},
-            allEntries = true
-    )
     public Booking cancelBooking(String id, String note) {
         Booking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
 
-        if (!booking.getStatus().equals(BookingStatus.IN_PROGRESS)) {
-            throw new BookingException("Booking is not in progress for cancellation");
+        // Validation
+        if (!booking.getStatus().equals(BookingStatus.CONFIRMED)) {
+            throw new BookingException("Booking is not in confirmed for cancellation");
         }
 
         List<StudioAssign> activeStudioAssigns = booking.getStudioAssigns()
-                .stream().filter(sa -> sa.getStatus().equals(AssignStatus.IS_HAPPENING))
+                .stream().filter(StudioAssign::isOutOfUpdated)
                 .toList();
         if (Validation.isValidCollection(activeStudioAssigns)) {
-            throw new BookingException("Some studio assign in booking is already in progress");
+            throw new BookingException("Cannot cancel booking with 2 days from the start date");
         }
 
         // If pay full then customer will be refund, if deposit then booking is being cancelled
-        if (booking.getBookingType().equals(BookingType.PAY_FULL)) {
-            booking.setStatus(BookingStatus.AWAITING_REFUND);
-            booking.getStudioAssigns().stream()
-                    .filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON))
-                    .forEach(s -> s.setStatus(AssignStatus.AWAITING_REFUND));
-        } else {
-            booking.setStatus(BookingStatus.CANCELLED);
-            booking.getStudioAssigns().stream()
-                    .filter(s -> s.getStatus().equals(AssignStatus.COMING_SOON))
-                    .forEach(s -> s.setStatus(AssignStatus.CANCELLED));
-        }
+        booking.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
+                ? BookingStatus.AWAITING_REFUND
+                : BookingStatus.CANCELLED
+        );
+
+        booking.getStudioAssigns()
+                .forEach(s -> s.setStatus(AssignStatus.CANCELLED));
+
         return bookingRepo.save(booking);
-    }
-
-
-    @Override
-    @Cacheable(value = "employeeBookings", key = "'BookingsOfEmployee'+#employeeAccountId")
-    public List<BookingResponse> getForEmployee(String employeeAccountId) {
-        Account employee = accountService.getAccountById(employeeAccountId);
-        if (employee.getRole() != AccountRole.STAFF) {
-            throw new BookingException("Only staff can view bookings by location");
-        }
-        if (employee.getLocation() == null) {
-            throw new BookingException("Staff does not have a location assigned");
-        }
-
-        String locationId = employee.getLocation().getId();
-        return bookingRepo.findAllByLocationId(locationId)
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
     }
 
     @Override

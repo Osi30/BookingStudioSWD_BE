@@ -114,7 +114,7 @@ public class BookingController {
 //    }
 
     @SecurityRequirement(name = "BearerAuth")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/bookings/{id}/cancel")
     public ResponseEntity<BaseResponse> cancelBooking(
             @PathVariable String id,
