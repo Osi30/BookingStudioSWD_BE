@@ -28,8 +28,6 @@ import com.studio.booking.services.StudioAssignService;
 import com.studio.booking.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import com.studio.booking.exceptions.exceptions.AccountException;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -49,7 +47,6 @@ public class StudioAssignServiceImpl implements StudioAssignService {
     private final BookingRepo bookingRepo;
     private final StudioAssignRepo studioAssignRepo;
     private final PaymentRepo paymentRepo;
-    private final CacheManager cacheManager;
 
     @Override
     public List<StudioAssignResponse> getAll() {
@@ -181,14 +178,12 @@ public class StudioAssignServiceImpl implements StudioAssignService {
                 .forEach(s -> s.setStatus(ServiceAssignStatus.CANCELLED));
 
         // Update Assign Studio Status
-        assign.setStatus(booking.getBookingType().equals(BookingType.PAY_FULL)
-                ? AssignStatus.AWAITING_REFUND : AssignStatus.CANCELLED);
+        assign.setStatus(AssignStatus.CANCELLED);
         assignRepo.save(assign);
         return "Studio assignment cancelled successfully!";
     }
 
     @Override
-    @Transactional
     public StudioAssignResponse updateStatus(String id, UpdateStatusRequest request) {
         var studioAssign = studioAssignRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Studio Assign not found with id: " + id));
@@ -204,62 +199,22 @@ public class StudioAssignServiceImpl implements StudioAssignService {
             throw new BookingException("Invalid StudioStatus: " + request.getStatus());
         }
 
-        // 1) Update assign
         studioAssign.setStatus(newStatus);
+
+        // Change booking status
+        // if assign is happening but booking is confirmed
+        if (newStatus.equals(AssignStatus.IS_HAPPENING)
+                && studioAssign.getBooking().getStatus().equals(BookingStatus.CONFIRMED)) {
+            studioAssign.getBooking().setStatus(BookingStatus.IN_PROGRESS);
+        }
+        // if booking is already complete now
+        else if (studioAssign.getBooking().isComplete()) {
+            studioAssign.getBooking().setStatus(BookingStatus.COMPLETED);
+        }
+
         studioAssignRepo.save(studioAssign);
 
-        // 2) Update booking theo rule
-        var booking = bookingRepo.findBookingById(studioAssign.getBooking().getId());
-
-        if (newStatus == AssignStatus.ENDED) {
-            boolean stillOpen =
-                    studioAssignRepo.existsByBooking_IdAndStatusNot(booking.getId(), AssignStatus.ENDED);
-            if (!stillOpen) {
-                booking.setStatus(BookingStatus.COMPLETED);
-                bookingRepo.save(booking);
-            }
-        } else if (newStatus == AssignStatus.COMING_SOON) {
-            boolean hasAnyNotComingSoon =
-                    studioAssignRepo.existsByBooking_IdAndStatusNot(booking.getId(), AssignStatus.COMING_SOON);
-            if (!hasAnyNotComingSoon) {
-                booking.setStatus(BookingStatus.CONFIRMED);
-                bookingRepo.save(booking);
-            }
-        } else {
-            booking.setStatus(BookingStatus.IN_PROGRESS);
-            bookingRepo.save(booking);
-        }
-
-//         if (newStatus == AssignStatus.IS_HAPPENING) {
-//            if (booking.getStatus() == BookingStatus.CONFIRMED) {
-//                booking.setStatus(BookingStatus.IN_PROGRESS);
-//                bookingRepo.save(booking);
-//            }
-
-
-        // 3) Evict cache chọn lọc (fallback: clear toàn bộ employeeBookings)
-        try {
-            String accountId = booking.getAccount().getId();
-
-            evict("bookings", "AllBookings");                 // admin list
-            evict("accountBookings", "BookingsOf" + accountId); // profile của chủ booking
-
-            clear("employeeBookings"); // Fallback: xóa toàn bộ cache của staff
-        } catch (Exception ignore) {
-            // không để cache-evict làm fail giao dịch
-        }
-
         return toResponse(studioAssign);
-    }
-
-    private void evict(String cacheName, String key) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) cache.evictIfPresent(key);
-    }
-
-    private void clear(String cacheName) {
-        Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) cache.clear();
     }
 
     private void updateTimeInterval(StudioAssign assign, StudioAssignRequest req) {

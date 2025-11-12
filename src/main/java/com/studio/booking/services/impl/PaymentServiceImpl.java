@@ -12,6 +12,7 @@ import com.studio.booking.enums.PaymentStatus;
 import com.studio.booking.enums.PaymentType;
 import com.studio.booking.exceptions.exceptions.AccountException;
 import com.studio.booking.exceptions.exceptions.BookingException;
+import com.studio.booking.exceptions.exceptions.PaymentException;
 import com.studio.booking.mappers.PaymentMapper;
 import com.studio.booking.repositories.BookingRepo;
 import com.studio.booking.repositories.PaymentRepo;
@@ -84,34 +85,34 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse updateStatus(String id, PaymentStatusRequest req) {
         Payment payment = paymentRepo.findById(id)
-                .orElseThrow(() -> new AccountException("Payment not found with id: " + id));
+                .orElseThrow(() -> new PaymentException("Payment not found with id: " + id));
 
         if (req.getStatus() == null) {
-            throw new IllegalArgumentException("Payment status cannot be null");
+            throw new PaymentException("Payment status cannot be null");
         }
 
-        // Không cho admin đổi sang cùng một trạng thái
+        // Không cho đổi sang cùng một trạng thái
         if (payment.getStatus().equals(req.getStatus())) {
-            throw new IllegalArgumentException("Payment already has this status: " + req.getStatus());
+            throw new PaymentException("Payment already has this status: " + req.getStatus());
         }
 
         payment.setStatus(req.getStatus());
 
+        // Success case
         if (req.getStatus().equals(PaymentStatus.SUCCESS)) {
-            payment.getBooking().setStatus(
-                    payment.getBooking().getStatus().equals(BookingStatus.AWAITING_PAYMENT)
-                            ? BookingStatus.CONFIRMED
-                            : payment.getBooking().getStatus()
-            );
-        }
+            // Set booking status
+            BookingStatus bookingStatus = switch (payment.getBooking().getStatus()) {
+                case AWAITING_PAYMENT -> BookingStatus.CONFIRMED;
+                case IN_PROGRESS -> payment.getBooking().isComplete().equals(Boolean.TRUE)
+                        ? BookingStatus.COMPLETED
+                        : payment.getBooking().getStatus();
+                case AWAITING_REFUND -> BookingStatus.CANCELLED;
+                default -> payment.getBooking().getStatus();
+            };
 
-        if (payment.getBooking().isComplete()){
-            payment.getBooking().setStatus(BookingStatus.COMPLETED);
+            payment.getBooking().setStatus(bookingStatus);
         }
-
         paymentRepo.save(payment);
-
-
 
         return mapper.toResponse(payment);
     }

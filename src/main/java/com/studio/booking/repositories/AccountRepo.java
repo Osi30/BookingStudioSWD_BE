@@ -12,7 +12,7 @@ import java.util.List;
 public interface AccountRepo extends JpaRepository<Account, String>, JpaSpecificationExecutor<Account> {
     Account findByEmail(String email);
 
-    Account findByRole(AccountRole role);
+    int countByRoleIs(AccountRole accountRole);
 
     List<Account> findAllByStatusIsIn(Collection<AccountStatus> statuses);
 }

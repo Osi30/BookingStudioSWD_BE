@@ -10,7 +10,7 @@ public enum AssignStatus {
     IS_HAPPENING("Is Happening"),
     ENDED("Ended"),
     CANCELLED("Cancelled"),
-    AWAITING_REFUND("Awaiting Refund")
+    NO_SHOWING("No Showing")
     ;
 
     private final String description;

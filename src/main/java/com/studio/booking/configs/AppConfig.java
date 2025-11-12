@@ -36,10 +36,10 @@ public class AppConfig {
     ApplicationRunner runner() {
         return args -> {
             // Create account admin
-            Account adminAccount = accountRepo.findByRole(AccountRole.ADMIN);
+            int adminNumber = accountRepo.countByRoleIs(AccountRole.ADMIN);
 
-            if (adminAccount == null) {
-                adminAccount = Account.builder()
+            if (adminNumber <= 0) {
+                Account adminAccount = Account.builder()
                         .email(adminEmail)
                         .fullName("Admin")
                         .role(AccountRole.ADMIN)
