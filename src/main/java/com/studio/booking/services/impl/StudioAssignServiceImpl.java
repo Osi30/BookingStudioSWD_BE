@@ -370,27 +370,27 @@ public class StudioAssignServiceImpl implements StudioAssignService {
             newBookingTotal = booking.getTotal();
 
             // Tìm payment ADDITION_PAYMENT để update, nếu không có thì tạo mới
-            var opt = paymentRepo.findTopByBooking_IdAndPaymentTypeOrderByPaymentDateDesc(
-                    bookingId, PaymentType.ADDITION_PAYMENT);
-
-            if (opt.isPresent()) {
-                Payment p = opt.get();
-                p.setAmount(extraFee); // chỉ phần phát sinh
-                paymentRepo.save(p);
-            } else {
-                Payment newP = new Payment();
-                newP.setAmount(extraFee); // chỉ phần phát sinh
-                newP.setPaymentType(PaymentType.ADDITION_PAYMENT);
-                newP.setStatus(PaymentStatus.PENDING);
-                newP.setBooking(booking);
-
-                // copy paymentMethod gần nhất nếu có
-                paymentRepo.findTopByBooking_IdOrderByPaymentDateDesc(bookingId)
-                        .ifPresent(last -> newP.setPaymentMethod(last.getPaymentMethod()));
-
-                newP.setPaymentDate(LocalDateTime.now());
-                paymentRepo.save(newP);
-            }
+//            var opt = paymentRepo.findTopByBooking_IdAndPaymentTypeOrderByPaymentDateDesc(
+//                    bookingId, PaymentType.ADDITION_PAYMENT);
+//
+//            if (opt.isPresent()) {
+//                Payment p = opt.get();
+//                p.setAmount(extraFee); // chỉ phần phát sinh
+//                paymentRepo.save(p);
+//            } else {
+//                Payment newP = new Payment();
+//                newP.setAmount(extraFee); // chỉ phần phát sinh
+//                newP.setPaymentType(PaymentType.ADDITION_PAYMENT);
+//                newP.setStatus(PaymentStatus.PENDING);
+//                newP.setBooking(booking);
+//
+//                // copy paymentMethod gần nhất nếu có
+//                paymentRepo.findTopByBooking_IdOrderByPaymentDateDesc(bookingId)
+//                        .ifPresent(last -> newP.setPaymentMethod(last.getPaymentMethod()));
+//
+//                newP.setPaymentDate(LocalDateTime.now());
+//                paymentRepo.save(newP);
+//            }
         }
 
         return StudioAssignAdditionTimeResponse.builder()
