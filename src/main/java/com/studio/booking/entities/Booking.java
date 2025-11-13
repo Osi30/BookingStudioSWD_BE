@@ -99,7 +99,7 @@ public class Booking {
             List<Payment> payments = this.payments.stream()
                     .filter(p -> p.getStatus().equals(PaymentStatus.SUCCESS)
                             && (p.getPaymentType().equals(PaymentType.DEPOSIT)
-                            || p.getPaymentType().equals(PaymentType.FULL_PAYMENT)))
+                            || p.getPaymentType().equals(PaymentType.FINAL_PAYMENT)))
                     .toList();
             return payments.size() == 2;
         }
