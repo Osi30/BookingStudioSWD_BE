@@ -121,7 +121,7 @@ public class BookingController {
             @RequestParam(required = false) String note
     ) {
         Booking booking = bookingService.cancelBooking(id, note);
-        if (booking.getStatus().equals(BookingStatus.AWAITING_PAYMENT)) {
+        if (booking.getStatus().equals(BookingStatus.AWAITING_REFUND)) {
             // Payment
             paymentService.createPayment(PaymentRequest.builder()
                     .amount(booking.getRefundPrice() * 70 / 100)
