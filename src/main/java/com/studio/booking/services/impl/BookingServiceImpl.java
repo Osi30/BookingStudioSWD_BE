@@ -23,6 +23,7 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,8 @@ public class BookingServiceImpl implements BookingService {
             studioAssign.setBooking(booking);
             studioAssigns.add(studioAssign);
         }
+
+        validateAssignTime(studioAssigns, bufferMinutes);
 
         booking.setStudioAssigns(studioAssigns);
         booking.setTotal(studioAssigns
@@ -231,5 +234,23 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepo.findById(id)
                 .orElseThrow(() -> new BookingException("Booking not found with id: " + id));
 
+    }
+
+    private void validateAssignTime(List<StudioAssign> requests, Long bufferMinutes) {
+        requests.forEach(sa -> {
+            if (sa.getStartTime() != null && sa.getEndTime() != null) {
+                LocalDateTime endTime = sa.getEndTime().plusMinutes(bufferMinutes);
+                List<StudioAssign> overlapTime = requests.stream()
+                        .filter(s
+                                -> !s.getId().equals(sa.getId())
+                                && s.getStartTime().toLocalDate().equals(sa.getStartTime().toLocalDate())
+                                && s.getStartTime().isBefore(endTime)
+                                && s.getEndTime().plusMinutes(bufferMinutes).isAfter(sa.getStartTime()))
+                        .toList();
+                if (Validation.isValidCollection(overlapTime)) {
+                    throw new BookingException("Overlap time for assign booking request");
+                }
+            }
+        });
     }
 }
