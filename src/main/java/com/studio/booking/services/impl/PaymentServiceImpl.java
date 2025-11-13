@@ -6,10 +6,7 @@ import com.studio.booking.dtos.response.PaymentCompletionStatusResponse;
 import com.studio.booking.dtos.response.PaymentResponse;
 import com.studio.booking.entities.Booking;
 import com.studio.booking.entities.Payment;
-import com.studio.booking.enums.BookingStatus;
-import com.studio.booking.enums.PaymentMethod;
-import com.studio.booking.enums.PaymentStatus;
-import com.studio.booking.enums.PaymentType;
+import com.studio.booking.enums.*;
 import com.studio.booking.exceptions.exceptions.AccountException;
 import com.studio.booking.exceptions.exceptions.BookingException;
 import com.studio.booking.exceptions.exceptions.PaymentException;
@@ -112,6 +109,16 @@ public class PaymentServiceImpl implements PaymentService {
 
             payment.getBooking().setStatus(bookingStatus);
         }
+        // Fail case
+        else if (req.getStatus().equals(PaymentStatus.FAILED)
+            && payment.getBooking().getStatus().equals(BookingStatus.AWAITING_PAYMENT)
+        ){
+            // Set booking status
+            payment.getBooking().setStatus(BookingStatus.CANCELLED);
+            payment.getBooking().getStudioAssigns().forEach(sa -> sa.setStatus(AssignStatus.CANCELLED));
+        }
+
+
         paymentRepo.save(payment);
 
         return mapper.toResponse(payment);
