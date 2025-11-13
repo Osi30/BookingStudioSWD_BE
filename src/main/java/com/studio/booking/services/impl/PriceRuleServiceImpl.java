@@ -4,6 +4,8 @@ import com.studio.booking.dtos.request.PriceRuleRequest;
 import com.studio.booking.dtos.response.PriceRuleResponse;
 import com.studio.booking.entities.PriceRule;
 import com.studio.booking.entities.PriceTableItem;
+import com.studio.booking.enums.PriceUnit;
+import com.studio.booking.exceptions.exceptions.PriceTableException;
 import com.studio.booking.repositories.PriceRuleRepo;
 import com.studio.booking.repositories.PriceTableItemRepo;
 import com.studio.booking.services.PriceRuleService;
@@ -62,6 +64,8 @@ public class PriceRuleServiceImpl implements PriceRuleService {
                 .isDeleted(false)
                 .build();
 
+        validateRule(rule);
+
         ruleRepo.save(rule);
         return toResponse(rule);
     }
@@ -82,6 +86,8 @@ public class PriceRuleServiceImpl implements PriceRuleService {
         if (req.getPricePerUnit() != null) rule.setPricePerUnit(req.getPricePerUnit());
         if (req.getUnit() != null) rule.setUnit(req.getUnit());
         if (req.getDate() != null) rule.setDate(req.getDate());
+
+        validateRule(rule);
 
         ruleRepo.save(rule);
         return toResponse(rule);
@@ -111,5 +117,36 @@ public class PriceRuleServiceImpl implements PriceRuleService {
                 .date(rule.getDate())
                 .isDeleted(rule.getIsDeleted())
                 .build();
+    }
+
+    private void validateRule(PriceRule rule) {
+        // Case for DayOfWeek
+        if (rule.getDayFilter() != null && rule.getDate() != null) {
+            throw new PriceTableException("It is not possible to have the same rule on day and date");
+        }
+
+        // Case for Time Interval
+        if (rule.getStartTime() != null && rule.getEndTime() != null
+                && !rule.getStartTime().isBefore(rule.getEndTime())) {
+            throw new PriceTableException("Start Time cannot be after End Time");
+        }
+
+        if (rule.getStartTime() == null && rule.getEndTime() != null) {
+            throw new PriceTableException("Conflict Time Interval: Start time is null");
+        }
+
+        if (rule.getStartTime() != null && rule.getEndTime() == null) {
+            throw new PriceTableException("Conflict Time Interval: End time is null");
+        }
+
+        // Case for Unit
+        if (!rule.getUnit().equals(PriceUnit.HOUR)){
+            throw new PriceTableException("Unsupported unit: " + rule.getUnit());
+        }
+
+        // Case for price
+        if (rule.getPricePerUnit() <= 0){
+            throw new PriceTableException("Price per unit must be greater than 0");
+        }
     }
 }
