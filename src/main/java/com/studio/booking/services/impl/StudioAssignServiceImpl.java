@@ -1,9 +1,6 @@
 package com.studio.booking.services.impl;
 
-import com.studio.booking.dtos.request.AdditionalTimePriceRequest;
-import com.studio.booking.dtos.request.StudioAssignRequest;
-import com.studio.booking.dtos.request.UpdateAdditionalTimeRequest;
-import com.studio.booking.dtos.request.UpdateStatusRequest;
+import com.studio.booking.dtos.request.*;
 import com.studio.booking.dtos.response.StudioAssignAdditionTimeResponse;
 import com.studio.booking.dtos.response.StudioAssignResponse;
 
@@ -22,6 +19,7 @@ import com.studio.booking.enums.BookingType;
 
 import com.studio.booking.repositories.StudioAssignRepo;
 import com.studio.booking.repositories.StudioRepo;
+import com.studio.booking.services.PaymentService;
 import com.studio.booking.services.PriceTableItemService;
 import com.studio.booking.services.ServiceAssignService;
 import com.studio.booking.services.StudioAssignService;
@@ -41,10 +39,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class StudioAssignServiceImpl implements StudioAssignService {
     private final ServiceAssignService serviceAssignService;
+    private final PaymentService paymentService;
     private final PriceTableItemService priceTableItemService;
     private final StudioAssignRepo assignRepo;
     private final StudioRepo studioRepo;
-    private final BookingRepo bookingRepo;
     private final StudioAssignRepo studioAssignRepo;
     private final PaymentRepo paymentRepo;
 
@@ -315,10 +313,6 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         StudioAssign assign = assignRepo.findByIdForUpdate(assignId)
                 .orElseThrow(() -> new BookingException("StudioAssign not found with id: " + assignId));
 
-        if (assign.getStartTime() == null || assign.getEndTime() == null) {
-            throw new BookingException("Assign missing start/end time");
-        }
-
         String studioTypeId = null;
         if (assign.getStudio() != null && assign.getStudio().getStudioType() != null) {
             studioTypeId = assign.getStudio().getStudioType().getId();
@@ -351,55 +345,25 @@ public class StudioAssignServiceImpl implements StudioAssignService {
         assign.setAdditionTime((double) newAddMinutes);
         assign.setStudioAmount(newStudioAmount);
         assign.setEndTime(baseEnd.plusMinutes(newAddMinutes));
+
+        assign.getBooking().setTotal(assign.getBooking().getTotal() + extraFee);
+
         assignRepo.save(assign);
 
-        String bookingId = null;
-        Double newBookingTotal = null;
-
-        if (assign.getBooking() != null) {
-            bookingId = assign.getBooking().getId();
-
-            // Tính lại tổng booking từ tất cả assign (trừ CANCELLED)
-            double total = assignRepo
-                    .sumAmountsByBookingIdAndStatusNot(bookingId, AssignStatus.CANCELLED);
-
-            Booking booking = bookingRepo.findById(bookingId)
-                    .orElseThrow(() -> new BookingException("Booking not found with id"));
-            booking.setTotal(total);
-//            bookingRepo.save(booking);
-            newBookingTotal = booking.getTotal();
-
-            // Tìm payment ADDITION_PAYMENT để update, nếu không có thì tạo mới
-//            var opt = paymentRepo.findTopByBooking_IdAndPaymentTypeOrderByPaymentDateDesc(
-//                    bookingId, PaymentType.ADDITION_PAYMENT);
-//
-//            if (opt.isPresent()) {
-//                Payment p = opt.get();
-//                p.setAmount(extraFee); // chỉ phần phát sinh
-//                paymentRepo.save(p);
-//            } else {
-//                Payment newP = new Payment();
-//                newP.setAmount(extraFee); // chỉ phần phát sinh
-//                newP.setPaymentType(PaymentType.ADDITION_PAYMENT);
-//                newP.setStatus(PaymentStatus.PENDING);
-//                newP.setBooking(booking);
-//
-//                // copy paymentMethod gần nhất nếu có
-//                paymentRepo.findTopByBooking_IdOrderByPaymentDateDesc(bookingId)
-//                        .ifPresent(last -> newP.setPaymentMethod(last.getPaymentMethod()));
-//
-//                newP.setPaymentDate(LocalDateTime.now());
-//                paymentRepo.save(newP);
-//            }
-        }
+        paymentService.createPayment(PaymentRequest.builder()
+                .amount(extraFee)
+                .paymentType(PaymentType.ADDITION_PAYMENT)
+                .paymentMethod(PaymentMethod.CASH)
+                .status(PaymentStatus.PENDING)
+                .build(), assign.getBooking());
 
         return StudioAssignAdditionTimeResponse.builder()
                 .assignId(assign.getId())
                 .addedMinutes(newAddMinutes)
                 .addedFee(extraFee)
                 .newStudioAmount(newStudioAmount)
-                .bookingId(bookingId)
-                .newBookingTotal(newBookingTotal)
+                .bookingId(assign.getBooking().getId())
+                .newBookingTotal(assign.getBooking().getTotal())
                 .build();
     }
 
